@@ -24,7 +24,7 @@
                         <th scope="col">Apellido</th>
                         <th scope="col">Nombre de usuario</th>
                         <th scope="col">Correo Electrónico</th>
-                        <th scope="col">Gerencia</th>
+                        <th scope="col">Dirección</th>
                         <th scope="col">Accion</th>
                     </tr>
                 </thead>
@@ -36,7 +36,7 @@
                         <td>{{ cliente.apellido }}</td>
                         <td>{{ cliente.nombre_usuario }}</td>
                         <td>{% if cliente.email is None %} Sin correo {% else %} {{ cliente.email }} {% endif %}</td>
-                        <td>{{ cliente.gerencia }}</td>
+                        <td>{{ cliente.direccion }}</td>
                         <td>
                             <a href="{% url 'editar_cliente' cliente.id %}" class="btn btn-sm btn-warning">
                                 <i class="fas fa-edit"></i> Editar

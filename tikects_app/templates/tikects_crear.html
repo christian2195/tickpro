@@ -45,11 +45,11 @@
 
         <!-- Campo de Gerencia -->
         <div class="mb-3">
-            <label for="gerencia" class="form-label">Seleccionar Gerencia:</label>
+            <label for="gerencia" class="form-label">Seleccionar Direccion:</label>
             <select class="form-select" id="gerencia" name="gerencia" required>
-                <option value="" disabled selected>-- Selecciona una gerencia --</option>
-                {% for gerencia in gerencias %}
-                    <option value="{{ gerencia.nombre }}">{{ gerencia.nombre }}</option>
+                <option value="" disabled selected>-- Selecciona una direccion --</option>
+                {% for direccion in direcciones %}
+                    <option value="{{ direccion.nombre }}">{{ direccion.nombre }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -70,8 +70,8 @@
 
 <script>
     $(document).ready(function () {
-        $('#gerencia').select2({
-            placeholder: "-- Selecciona o escribe una gerencia --",
+        $('#direccion').select2({
+            placeholder: "-- Selecciona o escribe una dirección --",
             allowClear: true
         });
     });

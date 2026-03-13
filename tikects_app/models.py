@@ -35,7 +35,7 @@ class Tickets(models.Model):
     cola_perteneciente = models.ForeignKey(Tickets_Colas, on_delete=models.CASCADE)
     servicio_perteneciente = models.ForeignKey(Tickets_Servicios, on_delete=models.CASCADE)
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
-    gerencia = models.CharField(max_length=200, default=None)
+    Direccion = models.CharField(max_length=200, default=None)
     descripcion_solucion = models.TextField(null=True, blank=True)
     cerrado_por_agente = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cerrado_por_agente', null=True, blank=True)
 
@@ -61,7 +61,7 @@ class Cliente(models.Model):
     nombre_usuario = models.CharField(max_length=200)
     email = models.EmailField(null=True, blank=True)  # Ahora no es obligatorio
     telefono = models.CharField(max_length=200, null=True, blank=True, default=None)  # Ahora no es obligatorio
-    gerencia = models.CharField(max_length=200, default=None)
+    Direccion = models.CharField(max_length=200, default=None)
     usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cliente', default=None)
 
     def __str__(self):
@@ -130,8 +130,8 @@ class Notificaciones(models.Model):
     def __str__(self):
         return self.descripcion
     
-#Tabla para gerencias
-class Gerencias(models.Model):
+#Tabla para Direciones
+class Direcciones(models.Model):  # Antes: Gerencias
     nombre = models.CharField(max_length=200)
     descripcion = models.TextField()
     fecha_creacion = models.DateTimeField(auto_now_add=True)

@@ -30,7 +30,7 @@
                         <th scope="col">Hora</th>
                         <th scope="col">Título</th>
                         <th scope="col">Descripción</th>
-                        <th scope="col">Gerencia</th>
+                        <th scope="col">Dirección</th>
                         <th scope="col">Servicio</th>
                         <th scope="col">Estado</th>
                     </tr>
@@ -43,7 +43,7 @@
                         <td>{{ tikect.creado|date:"h:i A" }}</td>
                         <td>{{ tikect.titulo }}</td>
                         <td>{{ tikect.descripcion }}</td>
-                        <td>{{ tikect.gerencia }}</td>
+                        <td>{{ tikect.direccion }}</td>
                         <td>{{ tikect.servicio_perteneciente }}</td>
                         <td>{% if tikect.cerrado is False %} Abierto {% else %} Cerrado {% endif %}</td>
                     </tr>

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-from .models import Tickets_Colas, Tickets_Servicios, Tickets_Respuestas_Automaticas, Agentes, Cliente, Grupos_Agentes, Agentes_Por_Grupos, Tickets, AsignacionTikects, Grupos_Clientes, ReasignacionTikects, Notificaciones, Gerencias
+from .models import Tickets_Colas, Tickets_Servicios, Tickets_Respuestas_Automaticas, Agentes, Cliente, Grupos_Agentes, Agentes_Por_Grupos, Tickets, AsignacionTikects, Grupos_Clientes, ReasignacionTikects, Notificaciones, Direcciones
 from django.db.models import Prefetch, Count
 from django.http import HttpResponse
 import openpyxl
@@ -322,7 +322,7 @@ def crear_clientes(request):
         email = request.POST.get('email') or None  # Manejar email opcional
         telefono = request.POST.get('telefono') or None  # Manejar teléfono opcional
         password = request.POST.get('password')
-        gerencia = request.POST.get('gerencia')
+        direccion = request.POST.get('direccion')
 
         try:
             # Crear usuario
@@ -341,7 +341,7 @@ def crear_clientes(request):
                 nombre_usuario=username,
                 email=email,
                 telefono=telefono,
-                gerencia=gerencia,
+                direccion=direccion,
                 usuario=nuevo_usuario
             )
 
@@ -390,18 +390,18 @@ def crear_tikects_clientes(request):
     if request.method == 'GET':
         servicios = Tickets_Servicios.objects.all()
         colas = Tickets_Colas.objects.all()
-        gerencias = Gerencias.objects.all()
+        direcciones = Direcciones.objects.all()
         return render(request, 'tikects_crear.html', {
             'servicios': servicios,
             'colas': colas,
-            'gerencias': gerencias
+            'direcciones': direcciones,
         })
     elif request.method == 'POST':
         titulo = request.POST['titulo']
         descripcion = request.POST['descripcion']
         cola_id = request.POST['cola']
         servicio_id = request.POST['servicio']
-        gerencia = request.POST['gerencia']
+        direccion = request.POST['direccion']
         usuario = request.user
 
         cola = Tickets_Colas.objects.get(id=cola_id)
@@ -412,7 +412,7 @@ def crear_tikects_clientes(request):
             descripcion=descripcion,
             cola_perteneciente=cola,
             servicio_perteneciente=servicio,
-            gerencia=gerencia,
+            direccion=direccion,
             usuario=usuario
         )
 
@@ -428,11 +428,11 @@ def crear_tikects_clientes(request):
             Notificaciones.objects.create(
                 tikect=nuevo_tikect,
                 descripcion=f"Nuevo ticket '{titulo}'",
-                usuario_creador=usuario,  # Usuario que creó el ticket
-                agente=agente_asignado   # Agente asignado al servicio
+                usuario_creador=usuario,
+                agente=agente_asignado
             )
 
-        return redirect('ver_mis_tikects')  # Redirige a la vista de los tickets del cliente
+        return redirect('ver_mis_tikects')
 
 #Funcion para crear los tikects administrador y agentes
 @login_required
@@ -440,18 +440,18 @@ def crear_tikects(request):
     if request.method == 'GET':
         servicios = Tickets_Servicios.objects.all()
         colas = Tickets_Colas.objects.all()
-        gerencias = Gerencias.objects.all()
+        direcciones = Direcciones.objects.all()
         return render(request, 'tikects_crear.html', {
             'servicios': servicios,
             'colas': colas,
-            'gerencias': gerencias
+            'direcciones': direcciones
         })
     elif request.method == 'POST':
         titulo = request.POST['titulo']
         descripcion = request.POST['descripcion']
         cola_id = request.POST['cola']
         servicio_id = request.POST['servicio']
-        gerencia = request.POST['gerencia']
+        direccion = request.POST['direccion']
         usuario = request.user
 
         cola = Tickets_Colas.objects.get(id=cola_id)
@@ -462,7 +462,7 @@ def crear_tikects(request):
             descripcion=descripcion,
             cola_perteneciente=cola,
             servicio_perteneciente=servicio,
-            gerencia=gerencia,
+            direccion=direccion,
             usuario=usuario
         )
 
@@ -478,11 +478,11 @@ def crear_tikects(request):
             Notificaciones.objects.create(
                 tikect=nuevo_tikect,
                 descripcion=f"Nuevo ticket '{titulo}'",
-                usuario_creador=usuario,  # Usuario que creó el ticket
-                agente=agente_asignado   # Agente asignado al servicio
+                usuario_creador=usuario,
+                agente=agente_asignado
             )
 
-        return redirect('ver_tikects')  # Redirige a la vista de todos los tikects
+        return redirect('ver_tikects')
     
 #Funcion para ver los tikects de los agentes genericos y la reasignacion
 @superuser_required
@@ -522,7 +522,7 @@ def agente_generico(request):
         if tiempo_reasignacion and agente_reasignacion:
             reasignar_agente(nueva_asignacion.id, tiempo_reasignacion)
 
-        return redirect('ver_agentes_genericos')  # Redirige a la vista de configuración
+        return redirect('ver_agentes_genericos')
 
 @superuser_required
 @login_required
@@ -548,39 +548,37 @@ def ver_agentes_genericos(request):
 def eliminar_asignacion(request, asignacion_id):
     asignacion = get_object_or_404(AsignacionTikects, id=asignacion_id)
     asignacion.delete()
-    return redirect('ver_agentes_genericos')  # Redirige a la lista de asignaciones después de eliminar
+    return redirect('ver_agentes_genericos')
 
 #Funcion para ver los clientes vean sus tikects
 @login_required
 def ver_mis_tikects(request):
     # Obtener los tickets del usuario actual
-    tikects = Tickets.objects.filter(usuario=request.user).order_by('-creado')  # Ordenar por fecha de creación
-    paginator = Paginator(tikects, 10)  # Mostrar 10 tickets por página
+    tikects = Tickets.objects.filter(usuario=request.user).order_by('-creado')
+    paginator = Paginator(tikects, 10)
 
-    # Obtener el número de página actual desde los parámetros GET
     page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)  # Obtener los tickets de la página actual
+    page_obj = paginator.get_page(page_number)
 
     return render(request, 'tikects_vista_lista_cliente.html', {'page_obj': page_obj})
 
 @login_required
 def ver_mis_tikects_cerrados(request):
-    tikects = Tickets.objects.filter(usuario=request.user, cerrado=True).order_by('-creado')  # Ordenar por fecha de creación en orden descendente
-    paginator = Paginator(tikects, 10)  # Mostrar 10 tickets por página
+    tikects = Tickets.objects.filter(usuario=request.user, cerrado=True).order_by('-creado')
+    paginator = Paginator(tikects, 10)
     page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)  # Obtener los tickets de la página actual
+    page_obj = paginator.get_page(page_number)
     return render(request, 'tikects_vista_lista_cliente.html', {'page_obj': page_obj})
-
 
 @login_required
 def ver_mis_tikects_abiertos(request):
-    tikects = Tickets.objects.filter(usuario=request.user, cerrado=False).order_by('-creado')  # Ordenar por fecha de creación en orden descendente
-    paginator = Paginator(tikects, 10)  # Mostrar 10 tickets por página
+    tikects = Tickets.objects.filter(usuario=request.user, cerrado=False).order_by('-creado')
+    paginator = Paginator(tikects, 10)
     page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)  # Obtener los tickets de la página actual
+    page_obj = paginator.get_page(page_number)
     return render(request, 'tikects_vista_lista_cliente.html', {'page_obj': page_obj})
 
-#Funcion para que los agentes vean los tikects que estan asignados a ellos asignados
+#Funcion para que los agentes vean los tikects que estan asignados a ellos
 @login_required
 def ver_tikects_asignados_agentes(request):
     agente_actual = get_object_or_404(Agentes, usuario=request.user)
@@ -600,7 +598,7 @@ def ver_tikects_asignados_agentes(request):
     tikects = tikects_directos | tikects_reasignados | tikects_servicios
 
     # Aplicar paginación
-    paginator = Paginator(tikects, 10)  # Mostrar 10 tikects por página
+    paginator = Paginator(tikects, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -608,7 +606,7 @@ def ver_tikects_asignados_agentes(request):
     reasignaciones_dict = {reasignacion.tikect.id: reasignacion.agente_nuevo.usuario.username for reasignacion in ReasignacionTikects.objects.all()}
     
     return render(request, 'tikects_asignados_agentes.html', {
-        'tikects': page_obj,  # Pasar el objeto paginado a la plantilla
+        'tikects': page_obj,
         'reasignaciones_dict': reasignaciones_dict
     })
 
@@ -616,62 +614,45 @@ def ver_tikects_asignados_agentes(request):
 def ver_tikects_asignados_agentes_cerrados(request):
     agente_actual = get_object_or_404(Agentes, usuario=request.user)
     
-    # Obtener los tikects cerrados asignados directamente al agente
     tikects_directos = Tickets.objects.filter(usuario=agente_actual.usuario, cerrado=True).order_by('-creado')
-    
-    # Obtener los tikects cerrados reasignados al agente
     reasignaciones = ReasignacionTikects.objects.filter(agente_nuevo=agente_actual)
     tikects_reasignados = Tickets.objects.filter(id__in=[reasignacion.tikect.id for reasignacion in reasignaciones], cerrado=True).order_by('-creado')
-    
-    # Obtener los tikects cerrados relacionados con los servicios asignados al agente
     asignaciones_servicios = AsignacionTikects.objects.filter(agente_actual=agente_actual)
     tikects_servicios = Tickets.objects.filter(servicio_perteneciente__in=[asignacion.servicio for asignacion in asignaciones_servicios], cerrado=True).order_by('-creado')
     
-    # Combinar todas las listas de tikects
     tikects = tikects_directos | tikects_reasignados | tikects_servicios
 
-    # Aplicar paginación
-    paginator = Paginator(tikects, 10)  # Mostrar 10 tikects por página
+    paginator = Paginator(tikects, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Obtener las reasignaciones para mostrar en la tabla
     reasignaciones_dict = {reasignacion.tikect.id: reasignacion.agente_nuevo.usuario.username for reasignacion in ReasignacionTikects.objects.all()}
     
     return render(request, 'tikects_asignados_agentes.html', {
-        'tikects': page_obj,  # Pasar el objeto paginado a la plantilla
+        'tikects': page_obj,
         'reasignaciones_dict': reasignaciones_dict
     })
-
 
 @login_required
 def ver_tikects_asignados_agentes_abiertos(request):
     agente_actual = get_object_or_404(Agentes, usuario=request.user)
     
-    # Obtener los tikects abiertos asignados directamente al agente
     tikects_directos = Tickets.objects.filter(usuario=agente_actual.usuario, cerrado=False).order_by('-creado')
-    
-    # Obtener los tikects abiertos reasignados al agente
     reasignaciones = ReasignacionTikects.objects.filter(agente_nuevo=agente_actual)
     tikects_reasignados = Tickets.objects.filter(id__in=[reasignacion.tikect.id for reasignacion in reasignaciones], cerrado=False).order_by('-creado')
-    
-    # Obtener los tikects abiertos relacionados con los servicios asignados al agente
     asignaciones_servicios = AsignacionTikects.objects.filter(agente_actual=agente_actual)
     tikects_servicios = Tickets.objects.filter(servicio_perteneciente__in=[asignacion.servicio for asignacion in asignaciones_servicios], cerrado=False).order_by('-creado')
     
-    # Combinar todas las listas de tikects
     tikects = tikects_directos | tikects_reasignados | tikects_servicios
 
-    # Aplicar paginación
-    paginator = Paginator(tikects, 10)  # Mostrar 10 tikects por página
+    paginator = Paginator(tikects, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Obtener las reasignaciones para mostrar en la tabla
     reasignaciones_dict = {reasignacion.tikect.id: reasignacion.agente_nuevo.usuario.username for reasignacion in ReasignacionTikects.objects.all()}
     
     return render(request, 'tikects_asignados_agentes.html', {
-        'tikects': page_obj,  # Pasar el objeto paginado a la plantilla
+        'tikects': page_obj,
         'reasignaciones_dict': reasignaciones_dict
     })
 
@@ -707,9 +688,9 @@ def cerrar_tikect(request, tikect_id):
     if request.method == 'POST':
         descripcion_solucion = request.POST.get('descripcion_solucion')
         tikect.cerrado = True
-        tikect.cerrado_fecha = timezone.now()  # Actualiza el campo cerrado_fecha con la fecha y hora actual
-        tikect.descripcion_solucion = descripcion_solucion  # Guarda la descripción de la solución
-        tikect.cerrado_por_agente = request.user # Agente que cerro el ticket
+        tikect.cerrado_fecha = timezone.now()
+        tikect.descripcion_solucion = descripcion_solucion
+        tikect.cerrado_por_agente = request.user
         tikect.save()
         if hasattr(request.user, 'agente'):
             return redirect('ver_tikects_asignados_agentes')
@@ -728,20 +709,12 @@ def tikects_estadisticas(request):
     tikects_abiertos = Tickets.objects.filter(cerrado=False).count()
     servicios = Tickets.objects.values('servicio_perteneciente__nombre').annotate(count=Count('servicio_perteneciente'))
 
-    # Evitar divisiones por cero
     porcentaje_abiertos = (tikects_abiertos / total_tikects * 100) if total_tikects > 0 else 0
     porcentaje_cerrados = (tikects_cerrados / total_tikects * 100) if total_tikects > 0 else 0
 
-    # Obtener tickets cerrados por día
     tikects_por_dia_cerrados = Tickets.objects.filter(cerrado=True).values('cerrado_fecha__date').annotate(count=Count('id')).order_by('cerrado_fecha__date')
-
-    # Obtener tickets cerrados por mes
     tikects_por_mes_cerrados = Tickets.objects.filter(cerrado=True).annotate(month=TruncMonth('cerrado_fecha')).values('month').annotate(count=Count('id')).order_by('month')
-
-    # Obtener tickets cerrados por semana
     tikects_por_semana_cerrados = Tickets.objects.filter(cerrado=True).annotate(week=TruncWeek('cerrado_fecha')).values('week').annotate(count=Count('id')).order_by('week')
-
-    # Obtener tickets cerrados por agente
     tikects_por_agente = Tickets.objects.filter(cerrado=True).values(
         'cerrado_por_agente__username',
         'cerrado_por_agente__agente__nombre',
@@ -758,7 +731,7 @@ def tikects_estadisticas(request):
         'tikects_por_dia_cerrados': list(tikects_por_dia_cerrados),
         'tikects_por_mes_cerrados': list(tikects_por_mes_cerrados),
         'tikects_por_semana_cerrados': list(tikects_por_semana_cerrados),
-        'tikects_por_agente': list(tikects_por_agente),  # Incluimos los datos de agentes
+        'tikects_por_agente': list(tikects_por_agente),
     }
     return render(request, 'estadisticas.html', context)
 
@@ -766,30 +739,25 @@ def tikects_estadisticas(request):
 @superuser_required
 @login_required
 def exportar_tikects_excel(request):
-    # Obtener el servicio seleccionado desde los parámetros GET
     servicio_seleccionado = request.GET.get('servicio')
 
-    # Filtrar los tickets cerrados según el servicio seleccionado
     if servicio_seleccionado == "Todo":
         tikects = Tickets.objects.filter(cerrado=True)
     else:
         tikects = Tickets.objects.filter(cerrado=True, servicio_perteneciente__nombre=servicio_seleccionado)
 
-    # Crear un libro de trabajo y una hoja
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Tikects"
 
-    # Escribir encabezados
-    headers = ['ID', 'Título', 'Descripción', 'Usuario', 'Servicio', 'Estado', 'Fecha de Creación', "Fecha de Cierre", "Descripción de la solución", "Agente que cerró el ticket", "Gerencia"]
+    headers = ['ID', 'Título', 'Descripción', 'Usuario', 'Servicio', 'Estado', 'Fecha de Creación', "Fecha de Cierre", "Descripción de la solución", "Agente que cerró el ticket", "Dirección"]
     ws.append(headers)
 
-    # Escribir datos
     for tikect in tikects:
         estado = 'Cerrado' if tikect.cerrado else 'Abierto'
         fecha_creacion = tikect.creado
-        agente_cierre = tikect.cerrado_por_agente.username if tikect.cerrado_por_agente else "N/A"  # Verificar si existe
-        gerencia = tikect.gerencia if tikect.gerencia else "N/A"  # Verificar si existe
+        agente_cierre = tikect.cerrado_por_agente.username if tikect.cerrado_por_agente else "N/A"
+        direccion = tikect.direccion if tikect.direccion else "N/A"
 
         ws.append([
             tikect.id,
@@ -802,10 +770,9 @@ def exportar_tikects_excel(request):
             tikect.cerrado_fecha,
             tikect.descripcion_solucion,
             agente_cierre,
-            gerencia
+            direccion
         ])
 
-    # Crear una respuesta HTTP con el archivo Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = f'attachment; filename=tikects_cerrados_{servicio_seleccionado}.xlsx'
     wb.save(response)
@@ -815,31 +782,25 @@ def exportar_tikects_excel(request):
 @superuser_required
 @login_required
 def exportar_tikects_pdf(request):
-    # Obtener el servicio seleccionado desde los parámetros GET
     servicio_seleccionado = request.GET.get('servicio')
 
-    # Filtrar los tickets cerrados según el servicio seleccionado
     if servicio_seleccionado == "Todo":
         tikects = Tickets.objects.filter(cerrado=True)
     else:
         tikects = Tickets.objects.filter(cerrado=True, servicio_perteneciente__nombre=servicio_seleccionado)
 
-    # Crear una respuesta HTTP con el archivo PDF
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename=tikects_cerrados_{servicio_seleccionado}.pdf'
 
-    # Crear un objeto canvas
     c = canvas.Canvas(response, pagesize=letter)
     width, height = letter
 
-    # Configurar estilos y márgenes
     margen_x = 30
     margen_y = height - 40
-    espaciado_vertical = 15  # Espaciado entre filas
-    ancho_columna = [30, 100, 100, 60, 80, 80, 90, 70, 100]  # Ancho de cada columna
+    espaciado_vertical = 15
+    ancho_columna = [30, 100, 100, 60, 80, 80, 90, 70, 100]
 
-    # Escribir encabezados con líneas divisorias
-    c.setFont("Helvetica-Bold", 10)  # Fuente para encabezados
+    c.setFont("Helvetica-Bold", 10)
     c.drawString(margen_x, margen_y, "ID")
     c.drawString(margen_x + ancho_columna[0], margen_y, "Título")
     c.drawString(margen_x + sum(ancho_columna[:2]), margen_y, "Descripción")
@@ -848,38 +809,33 @@ def exportar_tikects_pdf(request):
     c.drawString(margen_x + sum(ancho_columna[:5]), margen_y, "Estado")
     c.drawString(margen_x + sum(ancho_columna[:6]), margen_y, "Fecha Cierre")
     c.drawString(margen_x + sum(ancho_columna[:7]), margen_y, "Agente")
-    c.drawString(margen_x + sum(ancho_columna[:8]), margen_y, "Gerencia")
-    c.line(margen_x, margen_y - 5, width - margen_x, margen_y - 5)  # Línea divisoria debajo de encabezados
+    c.drawString(margen_x + sum(ancho_columna[:8]), margen_y, "Dirección")
+    c.line(margen_x, margen_y - 5, width - margen_x, margen_y - 5)
 
-    # Escribir datos
-    c.setFont("Helvetica", 9)  # Fuente para datos
+    c.setFont("Helvetica", 9)
     y = margen_y - espaciado_vertical * 2
     for tikect in tikects:
-        # Formatear datos
         estado = 'Cerrado' if tikect.cerrado else 'Abierto'
         fecha_cierre = tikect.cerrado_fecha.strftime('%Y-%m-%d %H:%M:%S') if tikect.cerrado_fecha else "N/A"
         agente = tikect.cerrado_por_agente.username if tikect.cerrado_por_agente else "N/A"
-        gerencia = tikect.gerencia if tikect.gerencia else "N/A"
+        direccion = tikect.direccion if tikect.direccion else "N/A"
 
-        # Escribir cada campo en su posición
         c.drawString(margen_x, y, str(tikect.id))
-        c.drawString(margen_x + ancho_columna[0], y, tikect.titulo[:15])  # Limitar título a 15 caracteres
-        c.drawString(margen_x + sum(ancho_columna[:2]), y, tikect.descripcion[:20])  # Limitar descripción
+        c.drawString(margen_x + ancho_columna[0], y, tikect.titulo[:15])
+        c.drawString(margen_x + sum(ancho_columna[:2]), y, tikect.descripcion[:20])
         c.drawString(margen_x + sum(ancho_columna[:3]), y, tikect.usuario.username)
         c.drawString(margen_x + sum(ancho_columna[:4]), y, tikect.servicio_perteneciente.nombre)
         c.drawString(margen_x + sum(ancho_columna[:5]), y, estado)
         c.drawString(margen_x + sum(ancho_columna[:6]), y, fecha_cierre)
         c.drawString(margen_x + sum(ancho_columna[:7]), y, agente)
-        c.drawString(margen_x + sum(ancho_columna[:8]), y, gerencia)
+        c.drawString(margen_x + sum(ancho_columna[:8]), y, direccion)
 
-        # Actualizar posición vertical
         y -= espaciado_vertical
 
-        # Cambiar de página si se alcanza el final
         if y < 40:
             c.showPage()
             y = height - 40
-            c.setFont("Helvetica-Bold", 10)  # Reescribir encabezados en nueva página
+            c.setFont("Helvetica-Bold", 10)
             c.drawString(margen_x, y, "ID")
             c.drawString(margen_x + ancho_columna[0], y, "Título")
             c.drawString(margen_x + sum(ancho_columna[:2]), y, "Descripción")
@@ -888,17 +844,14 @@ def exportar_tikects_pdf(request):
             c.drawString(margen_x + sum(ancho_columna[:5]), y, "Estado")
             c.drawString(margen_x + sum(ancho_columna[:6]), y, "Fecha Cierre")
             c.drawString(margen_x + sum(ancho_columna[:7]), y, "Agente")
-            c.drawString(margen_x + sum(ancho_columna[:8]), y, "Gerencia")
-            c.line(margen_x, y - 5, width - margen_x, y - 5)  # Línea divisoria
+            c.drawString(margen_x + sum(ancho_columna[:8]), y, "Dirección")
+            c.line(margen_x, y - 5, width - margen_x, y - 5)
 
             y -= espaciado_vertical * 2
 
-    # Guardar y cerrar el PDF
     c.showPage()
     c.save()
     return response
-
-
 
 #Funcion para eliminar los servicios, colas y respuestas automaticas
 @superuser_required
@@ -907,7 +860,7 @@ def eliminar_servicio(request, servicio_id):
     servicio = get_object_or_404(Tickets_Servicios, id=servicio_id)
     if request.method == 'POST':
         servicio.delete()
-        return redirect('tikects_servicios')  # Redirige a la lista de servicios después de eliminar
+        return redirect('tikects_servicios')
     return render(request, 'tikects_servicios.html', {'servicio': servicio})
 
 @superuser_required
@@ -916,7 +869,7 @@ def eliminar_cola(request, cola_id):
     cola = get_object_or_404(Tickets_Colas, id=cola_id)
     if request.method == 'POST':
         cola.delete()
-        return redirect('tikects_colas')  # Redirige a la lista de colas después de eliminar
+        return redirect('tikects_colas')
     return render(request, 'tikects_colas.html', {'cola': cola})
 
 @superuser_required
@@ -925,7 +878,7 @@ def eliminar_respuesta_automatica(request, respuesta_id):
     respuesta = get_object_or_404(Tickets_Respuestas_Automaticas, id=respuesta_id)
     if request.method == 'POST':
         respuesta.delete()
-        return redirect('tikects_respuestas_automaticas')  # Redirige a la lista de respuestas automáticas después de eliminar
+        return redirect('tikects_respuestas_automaticas')
     return render(request, 'tikects_respuestas_automaticas.html', {'respuesta': respuesta})
 
 #Funcion para los grupos de clientes, ver y crear
@@ -950,7 +903,7 @@ def usuarios_clientes_grupos_crear(request):
         descripcion = request.POST.get('descripcion')
         if nombre and descripcion:
             Grupos_Clientes.objects.create(nombre=nombre, descripcion=descripcion)
-            return redirect('ver_grupos')  # Redirige a la lista de grupos después de crear uno nuevo
+            return redirect('ver_grupos')
     
 #Funcion para poder eliminar los agentes de los grupos
 @superuser_required
@@ -958,7 +911,7 @@ def usuarios_clientes_grupos_crear(request):
 def eliminar_agente_de_grupo(request, grupo_agente_id):
     grupo_agente = get_object_or_404(Agentes_Por_Grupos, id=grupo_agente_id)
     grupo_agente.delete()
-    return redirect('usuarios_por_grupos_agentes')  # Redirige a la lista de usuarios por grupos después de eliminar
+    return redirect('usuarios_por_grupos_agentes')
 
 #Funcion para eliminar los clientes y editar
 @superuser_required
@@ -966,7 +919,7 @@ def eliminar_agente_de_grupo(request, grupo_agente_id):
 def eliminar_cliente(request, cliente_id):
     cliente = get_object_or_404(Cliente, id=cliente_id)
     cliente.delete()
-    return redirect('ver_cliente')  # Redirige a la lista de clientes después de eliminar
+    return redirect('ver_cliente')
 
 @superuser_required
 @login_required
@@ -974,35 +927,29 @@ def editar_cliente(request, cliente_id):
     cliente = get_object_or_404(Cliente, id=cliente_id)
 
     if request.method == 'GET':
-        # Renderizar el formulario con los datos del cliente
         return render(request, 'usuarios_editar_cliente.html', {'cliente': cliente})
 
     elif request.method == 'POST':
-        # Obtener los datos del formulario
         nombre = request.POST.get('nombre')
         apellido = request.POST.get('apellido')
         nombre_usuario = request.POST.get('nombre_usuario')
-        email = request.POST.get('email', '').strip()  # Eliminar espacios en blanco
-        email = email if email else None  # Si está vacío, se guarda como None
+        email = request.POST.get('email', '').strip()
+        email = email if email else None
         password = request.POST.get('password')
-        gerencia = request.POST.get('gerencia')
+        direccion = request.POST.get('direccion')
 
-        # Actualizar los datos del cliente
         cliente.nombre = nombre
         cliente.apellido = apellido
         cliente.nombre_usuario = nombre_usuario
-        cliente.email = email  # Guardar como None si no se proporciona
-        cliente.gerencia = gerencia
+        cliente.email = email
+        cliente.direccion = direccion
 
-        # Si se proporciona una nueva contraseña, actualizarla
         if password:
             cliente.usuario.set_password(password)
             cliente.usuario.save()
 
         cliente.save()
-
-        # Redirigir a una página de éxito o lista de clientes
-        return redirect('ver_cliente')  # Cambia 'ver_cliente' por la URL de tu vista de lista de clientes
+        return redirect('ver_cliente')
 
 #Funcion para reasignar los tikects manualmente
 @login_required
@@ -1011,21 +958,18 @@ def reasignar_tikect(request, tikect_id):
     try:
         agente_actual = Agentes.objects.get(usuario=request.user)
     except Agentes.DoesNotExist:
-        return redirect('detalle_tikect', tikect_id=tikect.id)  # Redirige si el usuario no es un agente
+        return redirect('detalle_tikect', tikect_id=tikect.id)
 
-    # Verificar si el tikect ya ha sido reasignado
     if ReasignacionTikects.objects.filter(tikect=tikect, agente_nuevo=agente_actual).exists():
         return render(request, 'reasignar_tikects.html', {
             'tikect': tikect,
             'error': 'Este tikect ya ha sido reasignado.'
         })
 
-    # Obtener el grupo del agente actual
     grupo_agente_actual = Agentes_Por_Grupos.objects.filter(agente=agente_actual).first()
     if not grupo_agente_actual:
-        return redirect('detalle_tikect', tikect_id=tikect.id)  # Redirige si el agente no pertenece a ningún grupo
+        return redirect('detalle_tikect', tikect_id=tikect.id)
 
-    # Obtener los agentes del mismo grupo, excluyendo al agente actual
     agentes_por_grupo = Agentes_Por_Grupos.objects.filter(grupo=grupo_agente_actual.grupo).exclude(agente=agente_actual)
     agentes_grupo = [agente_por_grupo.agente for agente_por_grupo in agentes_por_grupo]
 
@@ -1033,18 +977,16 @@ def reasignar_tikect(request, tikect_id):
         nuevo_agente_id = request.POST.get('nuevo_agente')
         nuevo_agente = get_object_or_404(Agentes, id=nuevo_agente_id)
 
-        # Registrar la reasignación
         ReasignacionTikects.objects.create(
             tikect=tikect,
             agente_anterior=agente_actual,
             agente_nuevo=nuevo_agente
         )
 
-        #Registrar notificacion
         Notificaciones.objects.create(
-            tikect = tikect,
-            agente = nuevo_agente,
-            descripcion = "Tikect reasignado"
+            tikect=tikect,
+            agente=nuevo_agente,
+            descripcion="Tikect reasignado"
         )
 
         return redirect('ver_tikects_asignados_agentes')
@@ -1071,30 +1013,28 @@ def check_notifications(request):
 @superuser_required
 @login_required
 def editar_servicios(request, servicio_id):
-    servicio = get_object_or_404(Tickets_Servicios, id=servicio_id)  # Obtener el servicio o devolver 404
+    servicio = get_object_or_404(Tickets_Servicios, id=servicio_id)
 
-    if request.method == 'GET':  # Mostrar el formulario con los datos actuales
+    if request.method == 'GET':
         return render(request, 'tikects_servicios_editar.html', {'servicio': servicio})
-    else:  # Procesar el formulario enviado (POST)
+    else:
         servicio.nombre = request.POST.get('nombre')
         servicio.descripcion = request.POST.get('descripcion')
-        servicio.save()  # Guardar los cambios en la base de datos
-        return redirect('tikects_servicios')  # Redirigir a la lista de servicios después de guardar
+        servicio.save()
+        return redirect('tikects_servicios')
 
 #Editar cola de los tikects
 @superuser_required
 @login_required
 def editar_cola(request, cola_id):
-    # Obtener la cola específica o lanzar error 404 si no existe
     cola = get_object_or_404(Tickets_Colas, id=cola_id)
 
-    if request.method == 'POST':  # Si se envían datos desde el formulario
+    if request.method == 'POST':
         cola.nombre = request.POST.get('nombre')
         cola.descripcion = request.POST.get('descripcion')
-        cola.save()  # Guardar los cambios en la base de datos
-        return redirect('tikects_colas')  # Redirigir a la lista de colas después de guardar
+        cola.save()
+        return redirect('tikects_colas')
 
-    # Si es una solicitud GET, renderizar el formulario con datos actuales
     return render(request, 'tikects_colas_editar.html', {'cola': cola})
 
 #Editar agentes
@@ -1102,31 +1042,25 @@ def editar_cola(request, cola_id):
 @login_required
 def editar_agente(request, agente_id):
     try:
-        # Obtener el agente o lanzar un error 404
         agente = get_object_or_404(Agentes, id=agente_id)
-        usuario = agente.usuario  # Relación OneToOne con el usuario
+        usuario = agente.usuario
 
         if request.method == 'POST':
-            # Obtener valores del formulario
             nueva_contrasena = request.POST.get('password')
             
-            # Validar longitud de la contraseña si se proporciona
             if nueva_contrasena and len(nueva_contrasena) < 8:
                 messages.error(request, "La contraseña debe tener al menos 8 caracteres.")
                 return render(request, 'agentes_editar.html', {'agente': agente})
 
-            # Actualizar los datos del agente
             agente.nombre = request.POST.get('nombre', agente.nombre)
             agente.apellido = request.POST.get('apellido', agente.apellido)
             agente.nombre_usuario = request.POST.get('nombre_usuario', agente.nombre_usuario)
             agente.email = request.POST.get('email', agente.email)
             agente.telefono = request.POST.get('telefono', agente.telefono)
 
-            # Establecer la nueva contraseña si es válida
             if nueva_contrasena:
                 usuario.set_password(nueva_contrasena)
 
-            # Guardar los cambios
             agente.save()
             usuario.save()
 
@@ -1143,117 +1077,104 @@ def editar_agente(request, agente_id):
 @superuser_required
 @login_required
 def editar_grupo(request, grupo_id):
-    # Obtener el grupo específico o lanzar un error 404 si no existe
     grupo = get_object_or_404(Grupos_Agentes, id=grupo_id)
 
-    if request.method == 'POST':  # Si se envían datos desde el formulario
+    if request.method == 'POST':
         grupo.nombre = request.POST.get('nombre')
         grupo.descripcion = request.POST.get('descripcion')
-        grupo.save()  # Guardar los cambios en la base de datos
-        return redirect('ver_grupos')  # Redirigir a la lista de grupos después de guardar
+        grupo.save()
+        return redirect('ver_grupos')
 
-    # Si es una solicitud GET, renderizar el formulario con los datos actuales
     return render(request, 'grupos_editar.html', {'grupo': grupo})
 
+# Funciones para direcciones
 @superuser_required
 @login_required
-def ver_gerencias(request):
-    gerencias = Gerencias.objects.all()
-    return render(request, 'gerencias.html', {'gerencias': gerencias})
+def ver_direcciones(request):
+    direcciones = Direcciones.objects.all()
+    return render(request, 'direcciones.html', {'direcciones': direcciones})
 
 @superuser_required
 @login_required
-def crear_gerencia(request):
+def crear_direccion(request):
     if request.method == 'POST':
         nombre = request.POST.get('nombre')
         descripcion = request.POST.get('descripcion')
 
         if nombre and descripcion:
-            # Guardar la nueva gerencia en la base de datos
-            Gerencias.objects.create(nombre=nombre, descripcion=descripcion)
-            messages.success(request, 'La gerencia se ha creado con éxito.')
-            return redirect('ver_gerencias')  # Redirige a la lista de gerencias
+            Direcciones.objects.create(nombre=nombre, descripcion=descripcion)
+            messages.success(request, 'La dirección se ha creado con éxito.')
+            return redirect('ver_direcciones')
         else:
             messages.error(request, 'Todos los campos son obligatorios.')
 
-    return render(request, 'gerencias_crear.html')
+    return render(request, 'direccion_crear.html')
 
 @superuser_required
 @login_required
-def eliminar_gerencia(request, gerencia_id):
-    gerencia = get_object_or_404(Gerencias, id=gerencia_id)
+def eliminar_direccion(request, direccion_id):
+    direccion = get_object_or_404(Direcciones, id=direccion_id)
     if request.method == 'POST':
-        gerencia.delete()
-        messages.success(request, 'La gerencia ha sido eliminada con éxito.')
-        return redirect('ver_gerencias')  # Cambia a tu URL correspondiente para listar gerencias.
-    return redirect('ver_gerencias')
+        direccion.delete()
+        messages.success(request, 'La dirección ha sido eliminada con éxito.')
+        return redirect('ver_direcciones')
+    return redirect('ver_direcciones')
 
 @superuser_required
 @login_required
-def editar_gerencia(request, gerencia_id):
-    gerencia = get_object_or_404(Gerencias, id=gerencia_id)
+def editar_direccion(request, direccion_id):
+    direccion = get_object_or_404(Direcciones, id=direccion_id)
     if request.method == 'POST':
         nombre = request.POST.get('nombre')
         descripcion = request.POST.get('descripcion')
         if nombre and descripcion:
-            gerencia.nombre = nombre
-            gerencia.descripcion = descripcion
-            gerencia.save()
-            messages.success(request, 'La gerencia ha sido actualizada con éxito.')
-            return redirect('lista_gerencias')  # Cambia a tu URL para listar gerencias.
+            direccion.nombre = nombre
+            direccion.descripcion = descripcion
+            direccion.save()
+            messages.success(request, 'La dirección ha sido actualizada con éxito.')
+            return redirect('ver_direcciones')
         else:
             messages.error(request, 'Todos los campos son obligatorios.')
-    return render(request, 'editar_gerencia.html', {'gerencia': gerencia})
+    return render(request, 'editar_direccion.html', {'direccion': direccion})
 
 @superuser_required
 @login_required
 def registrar_usuarios(request):
-    """
-    Vista para registrar usuarios desde un archivo Excel ya definido, incluyendo la gerencia.
-    """
-    # Ruta del archivo Excel (preseleccionada)
     ruta_archivo = os.path.join(settings.BASE_DIR, 'usuarios_nuevos.xlsx')
-
-    error = None  # Variable para almacenar mensajes de error
+    error = None
 
     if request.method == 'POST':
         try:
-            # Leer el archivo Excel
             datos = pd.read_excel(ruta_archivo)
             
-            # Validar que no haya valores nulos
             if datos.isnull().values.any():
                 raise ValueError("El archivo Excel contiene valores nulos. Verifica las columnas.")
 
-            # Verificar que las columnas necesarias existan
-            columnas_requeridas = ['Nombre', 'Apellido', 'usuario', 'Clave', 'Gerencia', 'Correo']
+            columnas_requeridas = ['Nombre', 'Apellido', 'usuario', 'Clave', 'Direccion', 'Correo']
             if not all(col in datos.columns for col in columnas_requeridas):
-                raise ValueError("El archivo Excel no contiene las columnas necesarias: 'Nombre', 'Apellido', 'usuario', 'Clave', 'Gerencia', 'Correo'")
+                raise ValueError("El archivo Excel no contiene las columnas necesarias: 'Nombre', 'Apellido', 'usuario', 'Clave', 'Direccion', 'Correo'")
 
-            # Registrar usuarios
             for _, fila in datos.iterrows():
                 try:
                     nombre = fila['Nombre']
                     apellido = fila['Apellido']
                     nombre_usuario = fila['usuario']
                     clave = fila['Clave']
-                    gerencia = fila['Gerencia']
-                    email = fila['Correo']  # Usar el correo proporcionado en el archivo Excel
-                    telefono = "000-000-0000"  # Valor por defecto
+                    direccion = fila['Direccion']
+                    email = fila['Correo']
+                    telefono = "000-000-0000"
 
-                    # Crear el usuario si no existe
                     if not User.objects.filter(username=nombre_usuario).exists():
                         usuario = User.objects.create_user(username=nombre_usuario, email=email, password=clave)
                         usuario.save()
 
-                        # Crear el cliente asociado
                         cliente = Cliente(
                             nombre=nombre,
                             apellido=apellido,
                             nombre_usuario=nombre_usuario,
                             email=email,
                             telefono=telefono,
-                            gerencia=gerencia,  # Asignar la gerencia desde el Excel
+                            direccion=direccion,
                             usuario=usuario
                         )
                         cliente.save()
@@ -1261,93 +1182,73 @@ def registrar_usuarios(request):
                         print(f"Usuario {nombre_usuario} ya existe, se omite su registro.")
                 except Exception as error_individual:
                     print(f"Error al registrar el usuario {fila['usuario']}: {error_individual}")
-                    continue  # Sigue con el próximo usuario en caso de error
+                    continue
 
             print(f"Total de usuarios procesados: {datos.shape[0]}")
-            return redirect('ver_cliente')  # Redirige a la página de éxito
+            return redirect('ver_cliente')
 
         except Exception as e:
-            # Capturar el error y enviarlo al contexto
             error = str(e)
 
-    return render(request, 'registrar_usuarios.html', {'error': error})  # Página inicial del formulario
-
+    return render(request, 'registrar_usuarios.html', {'error': error})
 
 #Funcion para ver los agentes para el servidor
 def ver_agentes(request):
-    # Obtener todos los agentes ordenados alfabéticamente por nombre de usuario
     agentes = Agentes.objects.all().order_by('nombre_usuario')
-    
-    # Renderizar la plantilla con los agentes en el contexto
     return render(request, 'usuarios_agentes.html', {'agentes': agentes})
-
 
 #Funcion para registrar los tickets
 @superuser_required
 @login_required
 def registrar_tickets_excel(request):
-    """
-    Vista para registrar tickets desde un archivo Excel.
-    """
-    # Ruta del archivo Excel
     ruta_archivo = os.path.join(settings.BASE_DIR, 'LISTA DE TICKETS CERRADOS.xlsx')
 
     if request.method == 'POST':
         try:
-            # Leer el archivo Excel
             df = pd.read_excel(ruta_archivo)
 
-            # Iterar sobre cada fila del DataFrame
             for index, row in df.iterrows():
                 try:
-                    # Obtener el cliente a partir del correo electrónico
                     try:
                         cliente = Cliente.objects.get(email=row['IDdelcliente'])
-                        usuario = cliente.usuario  # Relación OneToOne con User
+                        usuario = cliente.usuario
                     except Cliente.DoesNotExist:
                         messages.warning(request, f"Cliente con email '{row['IDdelcliente']}' no encontrado. Saltando registro.")
                         continue
 
-                    # Obtener la cola del ticket
                     cola = Tickets_Colas.objects.get(nombre=row['Cola'])
-
-                    # Obtener el servicio del ticket
                     servicio = Tickets_Servicios.objects.get(nombre=row['Servicio'])
 
-                    # Convertir las fechas a objetos datetime
                     creado_fecha = None
                     cerrado_fecha = None
 
                     if not pd.isnull(row['Creado']):
-                        creado_str = row['Creado'].split('(')[0].strip()  # Eliminar la zona horaria
-                        # Insertar un espacio entre la fecha y la hora si falta
-                        if len(creado_str) == 19:  # Formato correcto
+                        creado_str = row['Creado'].split('(')[0].strip()
+                        if len(creado_str) == 19:
                             creado_fecha = datetime.strptime(creado_str, '%Y-%m-%d %H:%M:%S')
-                        else:  # Corregir formato
+                        else:
                             creado_str = creado_str[:10] + ' ' + creado_str[10:]
                             creado_fecha = datetime.strptime(creado_str, '%Y-%m-%d %H:%M:%S')
 
                     if not pd.isnull(row['Fechadecierre']):
-                        cerrado_str = row['Fechadecierre'].split('(')[0].strip()  # Eliminar la zona horaria
-                        # Insertar un espacio entre la fecha y la hora si falta
-                        if len(cerrado_str) == 19:  # Formato correcto
+                        cerrado_str = row['Fechadecierre'].split('(')[0].strip()
+                        if len(cerrado_str) == 19:
                             cerrado_fecha = datetime.strptime(cerrado_str, '%Y-%m-%d %H:%M:%S')
-                        else:  # Corregir formato
+                        else:
                             cerrado_str = cerrado_str[:10] + ' ' + cerrado_str[10:]
                             cerrado_fecha = datetime.strptime(cerrado_str, '%Y-%m-%d %H:%M:%S')
 
-                    # Crear el ticket
                     ticket = Tickets(
                         titulo=row['Título'],
-                        descripcion="Descripción no proporcionada",  # Puedes ajustar esto según los datos disponibles
+                        descripcion="Descripción no proporcionada",
                         creado=creado_fecha,
                         cerrado=(row['Estado'].lower() == 'cerrado'),
                         cerrado_fecha=cerrado_fecha,
                         cola_perteneciente=cola,
                         servicio_perteneciente=servicio,
                         usuario=usuario,
-                        gerencia=cliente.gerencia,
-                        descripcion_solucion="Solución no proporcionada"  # Puedes ajustar esto según los datos disponibles
+                        direccion=cliente.direccion,
+                        descripcion_solucion="Solución no proporcionada"
                     )
                     ticket.save()
 
@@ -1359,7 +1260,7 @@ def registrar_tickets_excel(request):
                     messages.error(request, f"Error al registrar el ticket en la fila {index}: {e}")
 
             messages.success(request, "Tickets registrados exitosamente.")
-            return redirect('ver_tikects')  # Redirige a la vista de tickets
+            return redirect('ver_tikects')
 
         except Exception as e:
             messages.error(request, f"Error al procesar el archivo: {e}")

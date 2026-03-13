@@ -32,7 +32,7 @@
                         <th scope="col">Título</th>
                         <th scope="col">Descripción</th>
                         <th scope="col">Usuario</th>
-                        <th scope="col">Gerencia</th>
+                        <th scope="col">Dirección</th>
                         <th scope="col">Servicio</th>
                         <th scope="col">Estado</th>
                         <th scope="col">Reasignado a</th>
@@ -47,7 +47,7 @@
                         <td><a href="{% url 'detalle_tikect' tikect.id %}">{{ tikect.titulo }}</a></td>
                         <td>{{ tikect.descripcion }}</td>
                         <td>{{ tikect.usuario.username }}</td>
-                        <td>{{ tikect.gerencia }}</td>
+                        <td>{{ tikect.direccion }}</td>
                         <td>{{ tikect.servicio_perteneciente }}</td>
                         <td>{% if tikect.cerrado is False %} Abierto {% else %} Cerrado {% endif %}</td>
                         <td>

@@ -18,7 +18,7 @@
                 <p><strong>Hora:</strong> {{ tikect.creado|date:"h:i A" }}</p>
                 <p><strong>Descripción:</strong> {{ tikect.descripcion }}</p>
                 <p><strong>Usuario:</strong> {{ tikect.usuario.username }} ({{ tikect.usuario.cliente.nombre }} {{tikect.usuario.cliente.apellido}})</p>
-                <p><strong>Gerencia:</strong> {{ tikect.gerencia }}</p>
+                <p><strong>Dirección:</strong> {{ tikect.direccion }}</p>
                 <p><strong>Servicio:</strong> {{ tikect.servicio_perteneciente }}</p>
                 <p><strong>Estado:</strong> {% if tikect.cerrado %} Cerrado {% else %} Abierto {% endif %}</p>
                 {% if tikect.cerrado %} <p><strong>Solucion:</strong> {{ tikect.descripcion_solucion }} {% endif %}</p>

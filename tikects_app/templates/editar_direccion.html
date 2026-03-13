@@ -4,10 +4,10 @@
     <div class="container mt-5">
         <!-- Título principal -->
         <h1 class="text-center mb-4 text-primary">
-            <i class="fas fa-sitemap me-2"></i> Crear Gerencia
+            <i class="fas fa-edit me-2"></i> Editar Dirección
         </h1>
 
-        <!-- Formulario de creación de gerencias -->
+        <!-- Formulario de edición de direcciones -->
         <form method="post" class="shadow p-4 rounded bg-light">
             {% csrf_token %}
 
@@ -19,7 +19,7 @@
                     class="form-control" 
                     id="nombre" 
                     name="nombre" 
-                    placeholder="Ingrese el nombre de la gerencia" 
+                    value="{{ direccion.nombre }}" 
                     required>
             </div>
 
@@ -31,14 +31,13 @@
                     id="descripcion" 
                     name="descripcion" 
                     rows="4" 
-                    placeholder="Describa brevemente la gerencia" 
-                    required></textarea>
+                    required>{{ direccion.descripcion }}</textarea>
             </div>
 
             <!-- Botón de envío -->
             <div class="text-center">
                 <button type="submit" class="btn btn-success">
-                    <i class="fas fa-check-circle me-2"></i> Crear Gerencia
+                    <i class="fas fa-save me-2"></i> Guardar Cambios
                 </button>
             </div>
         </form>
