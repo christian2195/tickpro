@@ -27,7 +27,6 @@ urlpatterns = [
     path('tikects/ver_todos/', views.ver_tikects, name='ver_tikects'),
     path('tikects/ver_todos/cerrados/', views.ver_tikects_cerrados, name='ver_tikects_cerrados'),
     path('tikects/ver_todos/abiertos/', views.ver_tikects_abiertos, name='ver_tikects_abiertos'),
-    path('tikects/crear_tikects', views.crear_tikects, name='crear_tikects'),
     path('usuario/agente_generico/', views.agente_generico, name='agente_generico'),
     path('ver-agentes-genericos/', views.ver_agentes_genericos, name='ver_agentes_genericos'),
     path('tikects/crear_tikects', views.crear_tikects, name='crear_tikects'),
@@ -64,5 +63,5 @@ urlpatterns = [
     path('configuracion/registrar', views.registrar_usuarios, name='registrar_usuarios'),
     path('agentes/ver/', views.ver_agentes, name='ver_agentes'),
     path('registrar-tickets/', views.registrar_tickets_excel, name='registrar_tickets'),
-
+    path('tikects/crear_cliente_tikects/', views.crear_tikects_clientes, name='crear_cliente_tikects'),
 ]

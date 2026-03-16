@@ -1,27 +1,130 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crear Respuesta Automática - TickPro{% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
-        <!-- Título del formulario -->
-        <h1 class="text-center text-dark mb-4">
-            <i class="fas fa-comments me-2"></i> Crear Respuesta Automática
-        </h1>
-
-        <!-- Formulario -->
-        <form action="" method="POST" class="shadow p-4 rounded bg-light">
-            {% csrf_token %}
-            <!-- Campo Nombre -->
-            <div class="mb-3">
-                <label for="respuesta" class="form-label">Respuesta:</label>
-                <input type="text" name="respuesta" id="respuesta" class="form-control" placeholder="Ingresa la respuesta automática" required>
-            </div>
-
-            <!-- Botón Crear -->
-            <div class="text-center">
-                <button type="submit" class="btn btn-dark">
-                    <i class="fas fa-check-circle me-2"></i> Crear
-                </button>
-            </div>
-        </form>
+<!-- Encabezado de página -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-plus-circle me-3"></i> NUEVA RESPUESTA AUTOMÁTICA
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'configuracion' %}">Configuración</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'tikects_respuestas_automaticas' %}">Respuestas Automáticas</a></li>
+                    <li class="breadcrumb-item active">Nueva Respuesta</li>
+                </ol>
+            </nav>
+        </div>
     </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-comment-dots me-2"></i> Datos de la Respuesta</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="respuesta" class="form-label">Texto de la Respuesta <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="respuesta" name="respuesta" 
+                                      rows="6" placeholder="Escriba aquí el texto de la respuesta automática que se enviará a los clientes..." required></textarea>
+                            <div class="invalid-feedback">La respuesta es obligatoria.</div>
+                            <small class="text-muted">Máximo 1000 caracteres. Puede incluir variables como {nombre_cliente}, {id_ticket}, etc.</small>
+                        </div>
+
+                        <!-- Ejemplos de variables -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0"><i class="fas fa-code me-2"></i> Variables disponibles</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <ul class="list-unstyled">
+                                            <li><code>{nombre_cliente}</code> - Nombre del cliente</li>
+                                            <li><code>{id_ticket}</code> - ID del ticket</li>
+                                            <li><code>{titulo_ticket}</code> - Título del ticket</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <ul class="list-unstyled">
+                                            <li><code>{fecha_actual}</code> - Fecha actual</li>
+                                            <li><code>{agente}</code> - Nombre del agente</li>
+                                            <li><code>{servicio}</code> - Servicio del ticket</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vista previa -->
+                        <div class="mb-4">
+                            <label class="form-label">Vista Previa:</label>
+                            <div class="border rounded p-3 bg-light" id="preview">
+                                <p class="text-muted mb-0" id="previewText">La vista previa aparecerá aquí...</p>
+                            </div>
+                        </div>
+
+                        <!-- Información adicional -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>¿Para qué sirven las respuestas automáticas?</strong>
+                            <p class="mb-0 mt-2">Permiten responder rápidamente a consultas frecuentes, agilizando la atención al cliente y manteniendo la consistencia en las respuestas.</p>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'tikects_respuestas_automaticas' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check-circle me-2"></i> Crear Respuesta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Validación de formulario Bootstrap
+    (function() {
+        'use strict';
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+
+    // Vista previa en tiempo real
+    document.getElementById('respuesta').addEventListener('input', function() {
+        var preview = document.getElementById('previewText');
+        var text = this.value;
+        
+        if (text.trim() === '') {
+            preview.innerHTML = 'La vista previa aparecerá aquí...';
+            preview.classList.add('text-muted');
+        } else {
+            preview.innerHTML = text.replace(/\n/g, '<br>');
+            preview.classList.remove('text-muted');
+        }
+    });
+</script>
 {% endblock %}

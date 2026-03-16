@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Direcciones - TickPro{% endblock %}
+
+{% block content %}
+<!-- Encabezado de página -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-building me-3"></i> DIRECCIONES
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'configuracion' %}">Configuración</a></li>
+                    <li class="breadcrumb-item active">Direcciones</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Mensajes -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Botón de acción -->
+    <div class="mb-4">
+        <a href="{% url 'crear_direccion' %}" class="btn btn-success">
+            <i class="fas fa-plus-circle me-2"></i> Nueva Dirección
+        </a>
+    </div>
+
+    <!-- Tabla de direcciones -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i> Listado de Direcciones</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Fecha de Creación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for direccion in direcciones %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <strong>{{ direccion.nombre }}</strong>
+                            </td>
+                            <td>{{ direccion.descripcion|truncatechars:50 }}</td>
+                            <td>
+                                <i class="fas fa-calendar-alt text-muted me-1"></i>
+                                {{ direccion.fecha_creacion|date:"d/m/Y H:i" }}
+                            </td>
+                            <td>
+                                <a href="{% url 'editar_direccion' direccion.id %}" class="btn btn-sm btn-primary me-1" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-danger" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#confirmModal" 
+                                        data-direccion-id="{{ direccion.id }}"
+                                        data-direccion-nombre="{{ direccion.nombre }}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4">
+                                <i class="fas fa-info-circle text-muted fa-2x mb-2"></i>
+                                <p class="text-muted mb-0">No hay direcciones registradas.</p>
+                                <a href="{% url 'crear_direccion' %}" class="btn btn-sm btn-primary mt-3">
+                                    <i class="fas fa-plus-circle me-2"></i> Crear primera dirección
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage">¿Está seguro de que desea eliminar esta dirección?</p>
+                <p class="text-muted small">Esta acción no se puede deshacer y podría afectar a tickets asociados.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i> Cancelar
+                </button>
+                <form id="deleteForm" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-2"></i> Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Manejar el modal de confirmación
+    document.addEventListener('DOMContentLoaded', function() {
+        var confirmModal = document.getElementById('confirmModal');
+        confirmModal.addEventListener('show.bs.modal', function(event) {
+            var button = event.relatedTarget;
+            var direccionId = button.getAttribute('data-direccion-id');
+            var direccionNombre = button.getAttribute('data-direccion-nombre');
+            
+            var modalMessage = document.getElementById('modalMessage');
+            modalMessage.innerHTML = `¿Está seguro de que desea eliminar la dirección <strong>${direccionNombre}</strong>?`;
+            
+            var deleteForm = document.getElementById('deleteForm');
+            deleteForm.action = '{% url "eliminar_direccion" 0 %}'.replace('0', direccionId);
+        });
+    });
+</script>
+{% endblock %}

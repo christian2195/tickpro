@@ -1,148 +1,460 @@
-/* Animación para la página principal */
-.animated-title {
-    animation: fadeInDown 2s ease-in-out, subtleColorChange 3s infinite alternate;
+/* ===== VARIABLES Y CONFIGURACIÓN GLOBAL ===== */
+:root {
+    --primary-color: #003366;      /* Azul corporativo oscuro */
+    --secondary-color: #1a4d8c;    /* Azul medio */
+    --accent-color: #c49a2b;       /* Dorado institucional */
+    --success-color: #2e7d32;      /* Verde sobrio */
+    --danger-color: #b71c1c;       /* Rojo corporativo */
+    --warning-color: #b26a00;      /* Naranja institucional */
+    --info-color: #0d47a1;         /* Azul información */
+    --light-color: #f5f5f5;        /* Gris muy claro */
+    --dark-color: #1e1e1e;         /* Casi negro */
+    --gray-color: #757575;         /* Gris medio */
+    --border-color: #e0e0e0;        /* Color de bordes */
+    --white-color: #ffffff;
+    --sidebar-width: 250px;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 8px rgba(0,0,0,0.12);
+    --shadow-lg: 0 8px 16px rgba(0,0,0,0.15);
+    --transition: all 0.2s ease;
 }
 
-/* Animación de desvanecimiento hacia abajo */
-@keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-/* Cambio de color sutil */
-@keyframes subtleColorChange {
-    from {
-        color: #007bff; /* Azul moderno */
-    }
-    to {
-        color: #0056b3; /* Azul más oscuro */
-    }
+body {
+    font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+    background-color: #f0f2f5;
+    color: var(--dark-color);
+    line-height: 1.5;
+    font-size: 14px;
 }
 
-/* Animación para configuración */
-.animated-section {
-    animation: fadeInSlide 1.5s ease-in-out;
+/* ===== TIPOGRAFÍA CORPORATIVA ===== */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Roboto Condensed', 'Segoe UI', Arial, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--primary-color);
 }
 
-@keyframes fadeInSlide {
-    from {
-        opacity: 0;
-        transform: translateY(50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+h1 {
+    font-size: 2rem;
+    border-bottom: 3px solid var(--accent-color);
+    padding-bottom: 0.75rem;
+    margin-bottom: 2rem;
+    display: inline-block;
 }
 
-/* Efecto de escala al pasar el cursor por encima */
-.box:hover {
-    animation: hoverEffect 0.3s ease-in-out;
-    transform: scale(1.05);
+h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
-@keyframes hoverEffect {
-    from {
-        transform: scale(1);
-    }
-    to {
-        transform: scale(1.05);
-    }
+h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
 }
 
-/* Animación para la opción de tickets en barra de navegación */
-.animated-dropdown {
-    animation: fadeInDown 0.3s ease-in-out; /* Efecto de entrada */
+/* ===== BARRA DE NAVEGACIÓN CORPORATIVA ===== */
+.navbar {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
+    box-shadow: var(--shadow-md);
+    padding: 0.75rem 2rem;
+    border-bottom: 3px solid var(--accent-color);
 }
 
-/* Configuración de menú desplegable */
-.dropdown-menu {
+.navbar-brand {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--white-color) !important;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'Roboto Condensed', sans-serif;
+}
+
+.navbar-brand i {
+    color: var(--accent-color);
+    margin-right: 10px;
+}
+
+.nav-link {
+    color: rgba(255,255,255,0.9) !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem !important;
+    border-radius: 4px;
+    transition: var(--transition);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.nav-link:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: var(--white-color) !important;
+}
+
+.nav-link.active {
+    background-color: rgba(196, 154, 43, 0.2);
+    color: var(--accent-color) !important;
+}
+
+/* ===== NOTIFICACIONES ===== */
+.notification-bell {
+    position: relative;
+}
+
+.notification-bell .badge {
     position: absolute;
-    will-change: transform;
-    max-width: 200px;
-    overflow: hidden;
-    z-index: 1050;
+    top: -5px;
+    right: -5px;
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+    border-radius: 50%;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+    font-weight: bold;
 }
 
-/* Transición suave en hover */
+.dropdown-menu {
+    border: none;
+    border-radius: 4px;
+    box-shadow: var(--shadow-lg);
+    padding: 0.5rem 0;
+}
+
 .dropdown-item {
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
 }
 
 .dropdown-item:hover {
-    background-color: #0056b3; /* Azul oscuro en hover */
-    color: #ffffff; /* Texto blanco */
-    transform: scale(1.05);
+    background-color: var(--light-color);
 }
 
-/* Base general para el sitio */
-body {
-    background-color: #e3f2fd !important;
-    font-family: Arial, sans-serif !important;
-}
-
-
-/* Barra de navegación */
-.navbar {
-    background-color: #007bff; /* Azul moderno */
-}
-.navbar .nav-link {
-    color: #fff !important; /* Texto blanco */
-}
-.navbar-brand {
-    color: #ffffff !important;
-    font-weight: bold;
-}
-.navbar-toggler-icon {
-    filter: invert(1);
-}
-
-.navbar .nav-link:hover {
-    background-color: #0056b3; /* Azul oscuro */
-    border-radius: 5px;
-}
-
-/* Estilo para truncar texto */
-.text-truncate {
+/* ===== TARJETAS CORPORATIVAS ===== */
+.card {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    background: var(--white-color);
+    margin-bottom: 1.5rem;
 }
 
-.notification-content {
-    white-space: normal;
-    word-wrap: break-word;
+.card:hover {
+    box-shadow: var(--shadow-md);
 }
 
-/* Animación de campana */
-@keyframes bell-animation {
-    0%, 100% { transform: rotate(0); }
-    25% { transform: rotate(-15deg); }
-    75% { transform: rotate(15deg); }
+.card-header {
+    background-color: var(--light-color);
+    border-bottom: 2px solid var(--accent-color);
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
 }
 
-.notification-bell.animated {
-    animation: bell-animation 0.5s ease-in-out;
+.card-header h3, .card-header h5 {
+    margin: 0;
+    font-size: 1.1rem;
+    text-transform: uppercase;
 }
 
-/* Estilo del punto rojo de notificación */
-.notification-bell .badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    padding: 5px 10px;
-    border-radius: 50%;
-    background: red;
-    color: white;
-    display: none;
+.card-body {
+    padding: 1.5rem;
 }
 
-.notification-bell.has-notification .badge {
-    display: inline;
+/* ===== TABLAS CORPORATIVAS ===== */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+.table thead th {
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.table tbody tr:hover {
+    background-color: rgba(0, 51, 102, 0.02);
+}
+
+.table tbody td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+}
+
+/* ===== BOTONES CORPORATIVOS ===== */
+.btn {
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 0.5rem 1.25rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+}
+
+.btn-success {
+    background-color: var(--success-color);
+    color: var(--white-color);
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+    color: var(--white-color);
+}
+
+.btn-warning {
+    background-color: var(--warning-color);
+    color: var(--white-color);
+}
+
+.btn-outline-primary {
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+/* ===== FORMULARIOS CORPORATIVOS ===== */
+.form-control, .form-select {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--accent-color);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(196, 154, 43, 0.1);
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* ===== ALERTAS CORPORATIVAS ===== */
+.alert {
+    border: none;
+    border-radius: 4px;
+    padding: 1rem 1.5rem;
+    border-left: 4px solid transparent;
+}
+
+.alert-success {
+    background-color: #e8f5e8;
+    border-left-color: var(--success-color);
+}
+
+.alert-danger {
+    background-color: #fbe9e7;
+    border-left-color: var(--danger-color);
+}
+
+.alert-warning {
+    background-color: #fff3e0;
+    border-left-color: var(--warning-color);
+}
+
+.alert-info {
+    background-color: #e3f2fd;
+    border-left-color: var(--info-color);
+}
+
+/* ===== PAGINACIÓN ===== */
+.pagination {
+    display: flex;
+    gap: 0.25rem;
+    margin-top: 2rem;
+}
+
+.pagination .btn {
+    padding: 0.4rem 0.8rem;
+    min-width: 2.5rem;
+}
+
+/* ===== MODALES ===== */
+.modal-content {
+    border: none;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.modal-header {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border-bottom: 2px solid var(--accent-color);
+    padding: 1rem 1.5rem;
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border-color);
+    padding: 1rem 1.5rem;
+}
+
+/* ===== ENCABEZADOS DE SECCIÓN ===== */
+.page-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: var(--white-color);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    border-bottom: 3px solid var(--accent-color);
+}
+
+.page-header h1 {
+    color: var(--white-color);
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.page-header .breadcrumb {
+    background: transparent;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.page-header .breadcrumb-item a {
+    color: rgba(255,255,255,0.8);
+}
+
+.page-header .breadcrumb-item.active {
+    color: var(--accent-color);
+}
+
+/* ===== ESTADÍSTICAS ===== */
+.stat-card {
+    background: var(--white-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.stat-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--gray-color);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ===== BADGES ===== */
+.badge {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.badge-success {
+    background-color: var(--success-color);
+    color: var(--white-color);
+}
+
+.badge-danger {
+    background-color: var(--danger-color);
+    color: var(--white-color);
+}
+
+.badge-warning {
+    background-color: var(--warning-color);
+    color: var(--white-color);
+}
+
+.badge-info {
+    background-color: var(--info-color);
+    color: var(--white-color);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.5rem 1rem;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+    
+    .table {
+        font-size: 0.85rem;
+    }
 }

@@ -1,37 +1,88 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar Grupo - TickPro{% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
-        <!-- Título del formulario -->
-        <h1 class="text-center text-primary mb-4">
-            <i class="fas fa-users-cog me-2"></i> Editar Grupo
-        </h1>
-
-        <!-- Formulario -->
-        <form method="post" class="shadow p-4 rounded bg-light">
-            {% csrf_token %}
-            
-            <!-- Campo Nombre -->
-            <div class="mb-3">
-                <label for="nombre" class="form-label">Nombre del Grupo:</label>
-                <input type="text" class="form-control" id="nombre" name="nombre" value="{{ grupo.nombre }}" placeholder="Ingresa el nombre del grupo" required>
-            </div>
-
-            <!-- Campo Descripción -->
-            <div class="mb-3">
-                <label for="descripcion" class="form-label">Descripción:</label>
-                <textarea class="form-control" id="descripcion" name="descripcion" rows="5" placeholder="Ingresa una descripción del grupo" required>{{ grupo.descripcion }}</textarea>
-            </div>
-
-            <!-- Botones -->
-            <div class="text-center">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-2"></i> Guardar Cambios
-                </button>
-                <a href="{% url 'usuarios_grupos_agentes' %}" class="btn btn-secondary ms-2">
-                    <i class="fas fa-arrow-left me-2"></i> Cancelar
-                </a>
-            </div>
-        </form>
+<!-- Encabezado de página -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-users-cog me-3"></i> EDITAR GRUPO
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'configuracion' %}">Configuración</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'usuarios_grupos_agentes' %}">Grupos de Agentes</a></li>
+                    <li class="breadcrumb-item active">Editar Grupo</li>
+                </ol>
+            </nav>
+        </div>
     </div>
+</div>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-layer-group me-2"></i> Datos del Grupo</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="row">
+                    <!-- Nombre del Grupo -->
+                    <div class="col-md-12 mb-3">
+                        <label for="nombre" class="form-label">Nombre del Grupo <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" 
+                               value="{{ grupo.nombre }}" placeholder="Ej: Soporte Técnico" required>
+                        <div class="invalid-feedback">El nombre del grupo es obligatorio.</div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="col-md-12 mb-3">
+                        <label for="descripcion" class="form-label">Descripción <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" 
+                                  rows="4" placeholder="Describa el propósito de este grupo" required>{{ grupo.descripcion }}</textarea>
+                        <div class="invalid-feedback">La descripción es obligatoria.</div>
+                    </div>
+                </div>
+
+                <!-- Información adicional -->
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Los grupos permiten organizar agentes con funciones similares y facilitan la reasignación de tickets.
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="text-end mt-4">
+                    <a href="{% url 'usuarios_grupos_agentes' %}" class="btn btn-secondary me-2">
+                        <i class="fas fa-arrow-left me-2"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Validación de formulario Bootstrap
+    (function() {
+        'use strict';
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
 {% endblock %}

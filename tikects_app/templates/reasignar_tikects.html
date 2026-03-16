@@ -1,27 +1,156 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reasignar Ticket - TickPro{% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
-        <h1 class="text-center mb-4 text-primary">Reasignar Tikect</h1>
-        <div class="card">
-            <div class="card-header">
-                <h3>{{ tikect.titulo }}</h3>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="nuevoAgente" class="form-label">Seleccionar nuevo agente</label>
-                        <select class="form-select" id="nuevoAgente" name="nuevo_agente" required>
-                            {% for agente in agentes_grupo %}
-                                <option value="{{ agente.id }}">{{ agente.nombre_usuario }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Reasignar Tikect</button>
-                    <a href="{% url 'detalle_tikect' tikect.id %}" class="btn btn-secondary ms-2">Cancelar</a>
-                </form>
-            </div>
+<!-- Encabezado de página -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-exchange-alt me-3"></i> REASIGNAR TICKET
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'pagina_principal' %}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'ver_tikects_asignados_agentes' %}">Mis Tickets</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'detalle_tikect' tikect.id %}">Ticket #{{ tikect.id }}</a></li>
+                    <li class="breadcrumb-item active">Reasignar</li>
+                </ol>
+            </nav>
         </div>
     </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <!-- Información del ticket -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i> Ticket a Reasignar</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4>{{ tikect.titulo }}</h4>
+                            <p class="text-muted">{{ tikect.descripcion|truncatechars:150 }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>ID:</strong> #{{ tikect.id }}</p>
+                            <p><strong>Servicio:</strong> {{ tikect.servicio_perteneciente.nombre }}</p>
+                            <p><strong>Cliente:</strong> {{ tikect.usuario.username }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mensaje de error -->
+            {% if error %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    {{ error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endif %}
+
+            <!-- Formulario de reasignación -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-friends me-2"></i> Seleccionar Nuevo Agente</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="nuevoAgente" class="form-label">
+                                Agente Destino <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="nuevoAgente" name="nuevo_agente" required>
+                                <option value="" disabled selected>-- Seleccione un agente --</option>
+                                {% for agente in agentes_grupo %}
+                                    <option value="{{ agente.id }}">
+                                        {{ agente.nombre_usuario }} - {{ agente.nombre }} {{ agente.apellido }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">Debe seleccionar un agente para reasignar el ticket.</div>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Solo se muestran agentes del mismo grupo.
+                            </small>
+                        </div>
+
+                        <!-- Información adicional -->
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Importante:</strong> Al reasignar el ticket, se notificará al nuevo agente y se registrará en el historial.
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'detalle_tikect' tikect.id %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-exchange-alt me-2"></i> Confirmar Reasignación
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Historial de reasignaciones -->
+            {% with historial=tikect.reasignaciontikects_set.all %}
+                {% if historial %}
+                    <div class="card mt-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0"><i class="fas fa-history me-2"></i> Historial de Reasignaciones</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline">
+                                {% for reasignacion in historial %}
+                                    <div class="d-flex mb-3">
+                                        <div class="flex-shrink-0">
+                                            <i class="fas fa-arrow-circle-right fa-2x text-primary"></i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <p class="mb-1">
+                                                <strong>{{ reasignacion.fecha_reasignacion|date:"d/m/Y h:i A" }}</strong>
+                                            </p>
+                                            <p class="mb-0">
+                                                De: {{ reasignacion.agente_anterior.nombre_usuario }} 
+                                                <i class="fas fa-arrow-right mx-2"></i>
+                                                A: {{ reasignacion.agente_nuevo.nombre_usuario }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Validación de formulario Bootstrap
+    (function() {
+        'use strict';
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
 {% endblock %}

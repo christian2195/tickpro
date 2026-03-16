@@ -1,47 +1,169 @@
 {% extends 'base.html' %}
+{% load static %}  <!-- ← IMPORTANTE: Agregar esta línea -->
+
+{% block title %}Inicio - TickPro{% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
-        <!-- Sección de bienvenida -->
-        <div class="text-center p-5 rounded" style="background-color: #f8f9fa;">
-            <h1 class="display-4 text-primary mb-3 animated-title">Bienvenido a TickPro</h1>
-            <p class="lead text-dark">
-                La mejor solución para la gestión de tickets y soporte técnico.
-            </p>
-            <a href="{% url 'ver_tikects' %}" class="btn btn-primary btn-lg mt-3">Explorar Tikects</a>
+<!-- Encabezado de página -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-home me-3"></i> INICIO
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#">Inicio</a></li>
+                    <li class="breadcrumb-item active">Dashboard</li>
+                </ol>
+            </nav>
         </div>
+    </div>
+</div>
 
-        <!-- Sección de tarjetas -->
-        <div class="row mt-5">
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-lg" style="background-color: #e3f2fd;">
-                    <div class="card-body text-center">
-                        <h5 class="card-title text-dark">Gestión de Clientes</h5>
-                        <p class="card-text text-secondary">Administra y organiza tus clientes fácilmente.</p>
-                        
-                    </div>
+<div class="container">
+    <!-- Bienvenida -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="text-primary mb-3">Bienvenido, {{ request.user.first_name|default:request.user.username }}</h2>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i> {{ now|date:"l, d F Y" }}
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <!-- Verificar si el archivo existe antes de mostrarlo -->
+                    <img src="{% static 'tikects_app/logo-gobierno.png' %}" alt="Logo" style="max-height: 60px;" onerror="this.style.display='none'">
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-lg" style="background-color: #f1f8e9;">
-                    <div class="card-body text-center">
-                        <h5 class="card-title text-dark">Gestión de Usuarios</h5>
-                        <p class="card-text text-secondary">Administra agentes, permisos y grupos.</p>
-                        
-                    </div>
+    <!-- Estadísticas rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-ticket-alt"></i>
                 </div>
+                <div class="stat-value">{{ total_tickets|default:"0" }}</div>  <!-- Usar variable -->
+                <div class="stat-label">Total Tickets</div>
             </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle" style="color: #28a745;"></i>  <!-- Color fijo -->
+                </div>
+                <div class="stat-value">{{ tickets_cerrados|default:"0" }}</div>  <!-- Usar variable -->
+                <div class="stat-label">Cerrados</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock" style="color: #ffc107;"></i>  <!-- Color fijo -->
+                </div>
+                <div class="stat-value">{{ tickets_abiertos|default:"0" }}</div>  <!-- Usar variable -->
+                <div class="stat-label">Abiertos</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users" style="color: #17a2b8;"></i>  <!-- Color fijo -->
+                </div>
+                <div class="stat-value">{{ total_agentes|default:"0" }}</div>  <!-- Usar variable -->
+                <div class="stat-label">Agentes</div>
+            </div>
+        </div>
+    </div>
 
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-lg" style="background-color: #fff3e0;">
-                    <div class="card-body text-center">
-                        <h5 class="card-title text-dark">Gestión de Tikects</h5>
-                        <p class="card-text text-secondary">Supervisa colas y servicios eficientemente.</p>
-                        
+    <!-- Acciones rápidas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-bolt me-2"></i> ACCIONES RÁPIDAS
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'crear_tikects' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-plus-circle me-2"></i> NUEVO TICKET
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'ver_tikects' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-list me-2"></i> VER TICKETS
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'estadisticas' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-chart-bar me-2"></i> ESTADÍSTICAS
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'configuracion' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-cog me-2"></i> CONFIGURACIÓN
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Últimos tickets -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-history me-2"></i> ÚLTIMOS TICKETS
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>TÍTULO</th>
+                            <th>USUARIO</th>
+                            <th>SERVICIO</th>
+                            <th>ESTADO</th>
+                            <th>FECHA</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in ultimos_tickets %}
+                        <tr>
+                            <td><strong>{{ ticket.id }}</strong></td>
+                            <td>{{ ticket.titulo|truncatechars:40 }}</td>
+                            <td>{{ ticket.usuario.username }}</td>
+                            <td>{{ ticket.servicio_perteneciente.nombre }}</td>
+                            <td>
+                                {% if ticket.cerrado %}
+                                    <span class="badge bg-danger">CERRADO</span>  <!-- Clase Bootstrap correcta -->
+                                {% else %}
+                                    <span class="badge bg-success">ABIERTO</span>  <!-- Clase Bootstrap correcta -->
+                                {% endif %}
+                            </td>
+                            <td>{{ ticket.creado|date:"d/m/Y" }}</td>
+                            <td>
+                                <a href="{% url 'detalle_tikect' ticket.id %}" class="btn btn-sm btn-primary" title="Ver detalles">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">No hay tickets disponibles</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

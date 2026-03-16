@@ -1,79 +1,144 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crear Ticket - TickPro{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h1 class="text-center mb-4 text-primary">
-        <i class="fas fa-ticket-alt me-2"></i> Crear Ticket
-    </h1>
-
-    <form method="post" action="{% url 'crear_tikects' %}" class="shadow p-4 rounded bg-light">
-        {% csrf_token %}
-
-        <!-- Campo de Servicio -->
-        <div class="mb-3">
-            <label for="servicio" class="form-label">Seleccionar Servicio:</label>
-            <select class="form-select" id="servicio" name="servicio" required>
-                <option value="" disabled selected>-- Selecciona un servicio --</option>
-                {% for servicio in servicios %}
-                    <option value="{{ servicio.id }}">{{ servicio.nombre }}</option>
-                {% endfor %}
-            </select>
+<!-- Encabezado de página -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-plus-circle me-3"></i> NUEVO TICKET
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'pagina_principal' %}">Inicio</a></li>
+                    <li class="breadcrumb-item active">Nuevo Ticket</li>
+                </ol>
+            </nav>
         </div>
-
-        <!-- Campo de Cola (ahora visible) -->
-        <div class="mb-3">
-            <label for="cola" class="form-label">Seleccionar Cola:</label>
-            <select class="form-select" id="cola" name="cola" required>
-                <option value="" disabled selected>-- Selecciona una cola --</option>
-                {% for cola in colas %}
-                    <option value="{{ cola.id }}">{{ cola.nombre }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- Campo de Título -->
-        <div class="mb-3">
-            <label for="titulo" class="form-label">Título:</label>
-            <input type="text" class="form-control" id="titulo" name="titulo" required>
-        </div>
-
-        <!-- Campo de Descripción -->
-        <div class="mb-3">
-            <label for="descripcion" class="form-label">Descripción:</label>
-            <textarea class="form-control" id="descripcion" name="descripcion" rows="4" required></textarea>
-        </div>
-
-        <!-- Campo de Gerencia -->
-        <div class="mb-3">
-            <label for="gerencia" class="form-label">Seleccionar Direccion:</label>
-            <select class="form-select" id="gerencia" name="gerencia" required>
-                <option value="" disabled selected>-- Selecciona una direccion --</option>
-                {% for direccion in direcciones %}
-                    <option value="{{ direccion.nombre }}">{{ direccion.nombre }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- Botón de envío -->
-        <div class="text-center">
-            <button type="submit" class="btn btn-success">
-                <i class="fas fa-check-circle me-2"></i> Crear Tikect
-            </button>
-        </div>
-    </form>
+    </div>
 </div>
 
-<!-- Scripts -->
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-ticket-alt me-2"></i> Formulario de Creación de Ticket</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'crear_tikects' %}" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Servicio -->
+                            <div class="col-md-6 mb-3">
+                                <label for="servicio" class="form-label">Servicio <span class="text-danger">*</span></label>
+                                <select class="form-select" id="servicio" name="servicio" required>
+                                    <option value="" disabled selected>-- Seleccione un servicio --</option>
+                                    {% for servicio in servicios %}
+                                        <option value="{{ servicio.id }}">{{ servicio.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Debe seleccionar un servicio.</div>
+                            </div>
+
+                            <!-- Cola -->
+                            <div class="col-md-6 mb-3">
+                                <label for="cola" class="form-label">Cola <span class="text-danger">*</span></label>
+                                <select class="form-select" id="cola" name="cola" required>
+                                    <option value="" disabled selected>-- Seleccione una cola --</option>
+                                    {% for cola in colas %}
+                                        <option value="{{ cola.id }}">{{ cola.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Debe seleccionar una cola.</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Dirección -->
+                            <div class="col-md-12 mb-3">
+                                <label for="direccion" class="form-label">Dirección <span class="text-danger">*</span></label>
+                                <select class="form-select" id="direccion" name="direccion" required>
+                                    <option value="" disabled selected>-- Seleccione una dirección --</option>
+                                    {% for direccion in direcciones %}
+                                        <option value="{{ direccion.nombre }}">{{ direccion.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Debe seleccionar una dirección.</div>
+                            </div>
+                        </div>
+
+                        <!-- Título -->
+                        <div class="mb-3">
+                            <label for="titulo" class="form-label">Título <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="titulo" name="titulo" 
+                                   placeholder="Ej: Problema con el sistema de facturación" required>
+                            <div class="invalid-feedback">El título es obligatorio.</div>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="mb-4">
+                            <label for="descripcion" class="form-label">Descripción del Problema <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" 
+                                      rows="5" placeholder="Describa detalladamente el problema o solicitud" required></textarea>
+                            <div class="invalid-feedback">La descripción es obligatoria.</div>
+                            <small class="text-muted">Sea lo más específico posible para ayudar a resolver el ticket más rápido.</small>
+                        </div>
+
+                        <!-- Información adicional -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Nota:</strong> Al crear el ticket, se notificará automáticamente al agente asignado al servicio seleccionado.
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'pagina_principal' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check-circle me-2"></i> Crear Ticket
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts para Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
 
 <script>
-    $(document).ready(function () {
+    // Inicializar Select2
+    $(document).ready(function() {
         $('#direccion').select2({
-            placeholder: "-- Selecciona o escribe una dirección --",
-            allowClear: true
+            placeholder: "-- Seleccione o escriba una dirección --",
+            allowClear: true,
+            width: '100%'
         });
     });
+
+    // Validación de formulario Bootstrap
+    (function() {
+        'use strict';
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
 </script>
 {% endblock %}

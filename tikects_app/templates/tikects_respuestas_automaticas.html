@@ -1,88 +1,191 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Respuestas Automáticas - TickPro{% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
-        <!-- Título principal -->
-        <h1 class="text-center mb-4 text-info">
-            <i class="fas fa-comments me-2"></i> Respuesta Automática
-        </h1>
+<!-- Encabezado de página -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-comments me-3"></i> RESPUESTAS AUTOMÁTICAS
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'configuracion' %}">Configuración</a></li>
+                    <li class="breadcrumb-item active">Respuestas Automáticas</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
 
-        <!-- Crear Respuesta Automática -->
-        <h2 class="text-secondary mt-4">
-            <a href="{% url 'tikects_respuestas_automaticas_crear' %}" class="text-decoration-none text-dark">
-                <i class="fas fa-plus-circle me-2"></i> Crear Respuesta Automática
-            </a>
-        </h2>
+<div class="container">
+    <!-- Mensajes -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
 
-        <!-- Lista de Respuestas Automáticas -->
-        <h2 class="text-secondary mt-4">
-            <i class="fas fa-list me-2"></i> Lista de Respuestas Automáticas
-        </h2>
-
-        <!-- Tabla de respuestas automáticas -->
-        <table class="table table-hover mt-3">
-            <thead class="table-info">
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Título</th>
-                    <th scope="col">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for respuestas_automaticas in respuestas_automaticas %}
-                <tr>
-                    <th scope="row">{{ forloop.counter }}</th>
-                    <td>{{ respuestas_automaticas.nombre }}</td>
-                    <td>
-                        <a href="#" class="btn btn-sm btn-primary me-2">
-                            <i class="fas fa-edit"></i> Editar
-                        </a>
-                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#confirmModal" data-respuesta-id="{{ respuestas_automaticas.id }}">
-                            <i class="fas fa-trash-alt"></i> Eliminar
-                        </button>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="3" class="text-center">No hay respuestas automáticas disponibles.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- Botón de acción -->
+    <div class="mb-4">
+        <a href="{% url 'tikects_respuestas_automaticas_crear' %}" class="btn btn-success">
+            <i class="fas fa-plus-circle me-2"></i> Nueva Respuesta Automática
+        </a>
     </div>
 
-    <!-- Modal de confirmación -->
-    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirmModalLabel">Confirmar eliminación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- Tabla de respuestas automáticas -->
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i> Listado de Respuestas Automáticas</h5>
+            <span class="badge bg-light text-dark">Total: {{ respuestas_automaticas|length }}</span>
+        </div>
+        <div class="card-body">
+            {% if respuestas_automaticas %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Título</th>
+                                <th>Vista Previa</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for respuesta in respuestas_automaticas %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <strong>{{ respuesta.nombre }}</strong>
+                                </td>
+                                <td>
+                                    <span class="text-muted">{{ respuesta.nombre|truncatechars:50 }}</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="#" class="btn btn-primary" 
+                                           data-bs-toggle="tooltip" title="Editar respuesta">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-info" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#previewModal{{ respuesta.id }}"
+                                                data-bs-toggle="tooltip" title="Vista previa">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-danger" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#confirmModal" 
+                                                data-respuesta-id="{{ respuesta.id }}"
+                                                data-respuesta-nombre="{{ respuesta.nombre }}"
+                                                data-bs-toggle="tooltip" title="Eliminar respuesta">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Modal de vista previa -->
+                            <div class="modal fade" id="previewModal{{ respuesta.id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-info text-white">
+                                            <h5 class="modal-title">
+                                                <i class="fas fa-eye me-2"></i> Vista Previa
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p><strong>Respuesta:</strong></p>
+                                            <div class="p-3 bg-light rounded">
+                                                {{ respuesta.nombre }}
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                Cerrar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                <div class="modal-body">
-                    ¿Estás seguro de que deseas eliminar esta respuesta automática?
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">No hay respuestas automáticas configuradas</h5>
+                    <p class="text-muted mb-3">Las respuestas automáticas permiten agilizar la atención de tickets comunes.</p>
+                    <a href="{% url 'tikects_respuestas_automaticas_crear' %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i> Crear primera respuesta
+                    </a>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <form id="deleteForm" method="post" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">Eliminar</button>
-                    </form>
-                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage">¿Está seguro de que desea eliminar esta respuesta automática?</p>
+                <p class="text-muted small">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i> Cancelar
+                </button>
+                <form id="deleteForm" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-2"></i> Eliminar
+                    </button>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        // Manejar el evento de mostrar el modal
+<script>
+    // Inicializar tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+
+    // Manejar el modal de confirmación
+    document.addEventListener('DOMContentLoaded', function() {
         var confirmModal = document.getElementById('confirmModal');
-        confirmModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget; // Botón que activó el modal
-            var respuestaId = button.getAttribute('data-respuesta-id'); // Extraer información del atributo data-respuesta-id
-
-            // Actualizar la acción del formulario con el ID de la respuesta automática
+        confirmModal.addEventListener('show.bs.modal', function(event) {
+            var button = event.relatedTarget;
+            var respuestaId = button.getAttribute('data-respuesta-id');
+            var respuestaNombre = button.getAttribute('data-respuesta-nombre');
+            
+            var modalMessage = document.getElementById('modalMessage');
+            modalMessage.innerHTML = `¿Está seguro de que desea eliminar la respuesta automática <strong>${respuestaNombre}</strong>?`;
+            
             var deleteForm = document.getElementById('deleteForm');
             deleteForm.action = '{% url "eliminar_respuesta_automatica" 0 %}'.replace('0', respuestaId);
         });
-    </script>
+    });
+</script>
 {% endblock %}

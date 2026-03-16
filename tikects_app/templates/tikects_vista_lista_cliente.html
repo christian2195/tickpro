@@ -1,79 +1,222 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mis Tickets - TickPro{% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
-        <!-- Título principal -->
-        <h1 class="text-center mb-4 text-primary">
-            <i class="fas fa-ticket-alt me-2"></i> Mis Tickets
-        </h1>
-
-        <!-- Botones de filtro -->
-        <div class="mb-4 text-center">
-            <a href="{% url 'ver_mis_tikects' %}" class="btn btn-primary me-2">
-                <i class="fas fa-list me-2"></i> Vista General
-            </a>
-            <a href="{% url 'ver_mis_tikects_cerrados' %}" class="btn btn-danger me-2">
-                <i class="fas fa-times-circle me-2"></i> Tickets Cerrados
-            </a>
-            <a href="{% url 'ver_mis_tikects_abiertos' %}" class="btn btn-success">
-                <i class="fas fa-check-circle me-2"></i> Tickets Abiertos
-            </a>
+<!-- Encabezado de página -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-ticket-alt me-3"></i> MIS TICKETS
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'pagina_principal_clientes' %}">Inicio</a></li>
+                    <li class="breadcrumb-item active">Mis Tickets</li>
+                </ol>
+            </nav>
         </div>
+    </div>
+</div>
 
-        <!-- Tabla de Tikects -->
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-success">
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Fecha</th>
-                        <th scope="col">Hora</th>
-                        <th scope="col">Título</th>
-                        <th scope="col">Descripción</th>
-                        <th scope="col">Dirección</th>
-                        <th scope="col">Servicio</th>
-                        <th scope="col">Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for tikect in page_obj %}
-                    <tr>
-                        <th scope="row">{{ forloop.counter }}</th>
-                        <td>{{ tikect.creado|date:"d/m/Y" }}</td>
-                        <td>{{ tikect.creado|date:"h:i A" }}</td>
-                        <td>{{ tikect.titulo }}</td>
-                        <td>{{ tikect.descripcion }}</td>
-                        <td>{{ tikect.direccion }}</td>
-                        <td>{{ tikect.servicio_perteneciente }}</td>
-                        <td>{% if tikect.cerrado is False %} Abierto {% else %} Cerrado {% endif %}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<div class="container">
+    <!-- Botones de filtro -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="btn-group w-100" role="group">
+                <a href="{% url 'ver_mis_tikects' %}" class="btn {% if request.resolver_match.url_name == 'ver_mis_tikects' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    <i class="fas fa-list me-2"></i> Todos
+                </a>
+                <a href="{% url 'ver_mis_tikects_abiertos' %}" class="btn {% if request.resolver_match.url_name == 'ver_mis_tikects_abiertos' %}btn-success{% else %}btn-outline-success{% endif %}">
+                    <i class="fas fa-folder-open me-2"></i> Abiertos
+                </a>
+                <a href="{% url 'ver_mis_tikects_cerrados' %}" class="btn {% if request.resolver_match.url_name == 'ver_mis_tikects_cerrados' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                    <i class="fas fa-check-circle me-2"></i> Cerrados
+                </a>
+            </div>
         </div>
+    </div>
 
-        <!-- Paginación -->
-        <div class="pagination">
-            {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-secondary">Anterior</a>
-            {% endif %}
-            {% for page in page_obj.paginator.page_range %}
-                {% if page == page_obj.number %}
-                    <a href="?page={{ page }}" class="btn btn-primary">{{ page }}</a>
-                {% else %}
-                    <a href="?page={{ page }}" class="btn btn-secondary">{{ page }}</a>
+    <!-- Estadísticas rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h6 class="card-title">Mis Tickets</h6>
+                    <h3 class="mb-0">{{ page_obj.paginator.count }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h6 class="card-title">Abiertos</h6>
+                    <h3 class="mb-0">{{ abiertos_count|default:"0" }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h6 class="card-title">Cerrados</h6>
+                    <h3 class="mb-0">{{ cerrados_count|default:"0" }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de tickets -->
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i> Listado de Tickets</h5>
+            <div>
+                <a href="{% url 'crear_tikects' %}" class="btn btn-sm btn-light">
+                    <i class="fas fa-plus-circle me-2"></i> Nuevo Ticket
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if page_obj %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Fecha</th>
+                                <th>Título</th>
+                                <th>Descripción</th>
+                                <th>Dirección</th>
+                                <th>Servicio</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tikect in page_obj %}
+                            <tr>
+                                <td><strong>#{{ tikect.id }}</strong></td>
+                                <td>
+                                    <small>{{ tikect.creado|date:"d/m/Y" }}</small>
+                                    <br>
+                                    <small class="text-muted">{{ tikect.creado|date:"h:i A" }}</small>
+                                </td>
+                                <td>{{ tikect.titulo|truncatechars:30 }}</td>
+                                <td>{{ tikect.descripcion|truncatechars:50 }}</td>
+                                <td>{{ tikect.direccion|truncatechars:20 }}</td>
+                                <td>{{ tikect.servicio_perteneciente.nombre }}</td>
+                                <td>
+                                    {% if tikect.cerrado %}
+                                        <span class="badge bg-danger">Cerrado</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Abierto</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'detalle_tikect' tikect.id %}" class="btn btn-sm btn-primary" 
+                                       data-bs-toggle="tooltip" title="Ver detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                {% if page_obj.paginator.num_pages > 1 %}
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for i in page_obj.paginator.page_range %}
+                            {% if page_obj.number == i %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ i }}</span>
+                                </li>
+                            {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
                 {% endif %}
-            {% endfor %}
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-secondary">Siguiente</a>
+
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-ticket-alt fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">No has creado ningún ticket aún</h5>
+                    <p class="text-muted mb-3">Crea tu primer ticket para solicitar soporte o realizar una consulta.</p>
+                    <a href="{% url 'crear_tikects' %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i> Crear mi primer ticket
+                    </a>
+                </div>
             {% endif %}
         </div>
     </div>
 
-    <script>
-        // Recargar la página cada 30 segundos (30000 milisegundos)
-        setTimeout(function(){
-            location.reload();
-        }, 30000);
-    </script>
+    <!-- Información de contacto -->
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-headset me-2"></i> ¿Necesitas ayuda con tu ticket?</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-2">
+                        <i class="fas fa-envelope me-2 text-info"></i>
+                        <strong>Email:</strong> soporte@tickpro.com
+                    </p>
+                    <p class="mb-2">
+                        <i class="fas fa-phone-alt me-2 text-info"></i>
+                        <strong>Teléfono:</strong> (0212) 123-4567
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-2">
+                        <i class="fas fa-clock me-2 text-info"></i>
+                        <strong>Horario:</strong> Lun-Vie 8:00 AM - 5:00 PM
+                    </p>
+                    <p class="mb-2">
+                        <i class="fas fa-clock me-2 text-info"></i>
+                        <strong>Tiempo de respuesta:</strong> 24-48 horas hábiles
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Inicializar tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+
+    // Auto-refresh cada 30 segundos (opcional)
+    // setTimeout(function(){
+    //     location.reload();
+    // }, 30000);
+</script>
 {% endblock %}

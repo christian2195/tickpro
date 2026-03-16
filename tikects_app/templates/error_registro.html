@@ -1,15 +1,48 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Error de Registro - TickPro{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <div class="alert alert-danger text-center shadow">
-        <h1 class="mb-4">
-            <i class="fas fa-exclamation-triangle me-2"></i> Ocurrió un error durante el registro
-        </h1>
-        <p class="lead">{{ error }}</p>
-        <a href="{% url 'registrar_usuarios' %}" class="btn btn-primary mt-3">
-            <i class="fas fa-arrow-left me-2"></i> Volver al formulario
-        </a>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white text-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ERROR DE REGISTRO
+                    </h3>
+                </div>
+                <div class="card-body text-center p-5">
+                    <i class="fas fa-times-circle text-danger fa-5x mb-4"></i>
+                    
+                    <h4 class="mb-3">Ocurrió un error durante el registro</h4>
+                    
+                    <div class="alert alert-danger text-start">
+                        <strong><i class="fas fa-info-circle me-2"></i>Detalles del error:</strong>
+                        <p class="mb-0 mt-2">{{ error }}</p>
+                    </div>
+                    
+                    <p class="text-muted mb-4">
+                        Por favor, verifique los datos e intente nuevamente.
+                        Si el problema persiste, contacte al administrador del sistema.
+                    </p>
+                    
+                    <div class="d-grid gap-2 d-md-block">
+                        <a href="{% url 'registrar_usuarios' %}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-2"></i> Volver al formulario
+                        </a>
+                        <a href="{% url 'pagina_principal' %}" class="btn btn-secondary">
+                            <i class="fas fa-home me-2"></i> Ir al inicio
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer text-muted text-center">
+                    <small>Código de error: {{ timestamp|default:"" }}</small>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

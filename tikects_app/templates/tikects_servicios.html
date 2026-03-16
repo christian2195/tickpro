@@ -1,90 +1,175 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Servicios - TickPro{% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
-        <!-- Título principal -->
-        <h1 class="text-center mb-4 text-success">
-            <i class="fas fa-cogs me-2"></i> Servicios
-        </h1>
+<!-- Encabezado de página -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-cogs me-3"></i> SERVICIOS
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'configuracion' %}">Configuración</a></li>
+                    <li class="breadcrumb-item active">Servicios</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
 
-        <!-- Crear Servicio -->
-        <h2 class="text-secondary mt-4">
-            <a href="{% url 'tikects_servicios_crear' %}" class="text-decoration-none text-dark">
-                <i class="fas fa-plus-circle me-2"></i> Crear Servicio
-            </a>
-        </h2>
+<div class="container">
+    <!-- Mensajes -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
 
-        <!-- Lista de Servicios -->
-        <h2 class="text-secondary mt-4">
-            <i class="fas fa-list me-2"></i> Lista de Servicios
-        </h2>
-
-        <!-- Tabla de servicios -->
-        <table class="table table-hover mt-3">
-            <thead class="table-success">
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Nombre del Servicio</th>
-                    <th scope="col">Descripción</th>
-                    <th scope="col">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for servicio in servicios %}
-                <tr>
-                    <th scope="row">{{ forloop.counter }}</th>
-                    <td>{{ servicio.nombre }}</td>
-                    <td>{{ servicio.descripcion }}</td>
-                    <td>
-                        <a href="{% url 'editar_servicio' servicio.id%}" class="btn btn-sm btn-primary me-2">
-                            <i class="fas fa-edit"></i> Editar
-                        </a>
-                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#confirmModal" data-servicio-id="{{ servicio.id }}">
-                            <i class="fas fa-trash-alt"></i> Eliminar
-                        </button>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" class="text-center">No hay servicios disponibles.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- Botón de acción -->
+    <div class="mb-4">
+        <a href="{% url 'tikects_servicios_crear' %}" class="btn btn-success">
+            <i class="fas fa-plus-circle me-2"></i> Nuevo Servicio
+        </a>
     </div>
 
-    <!-- Modal de confirmación -->
-    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirmModalLabel">Confirmar eliminación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- Tabla de servicios -->
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i> Listado de Servicios</h5>
+            <span class="badge bg-light text-dark">Total: {{ servicios|length }}</span>
+        </div>
+        <div class="card-body">
+            {% if servicios %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Tickets</th>
+                                <th>Agente Genérico</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for servicio in servicios %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <strong>{{ servicio.nombre }}</strong>
+                                </td>
+                                <td>{{ servicio.descripcion|truncatechars:60 }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ servicio.tickets_set.count }}</span>
+                                </td>
+                                <td>
+                                    {% with asignacion=servicio.asignaciontikects_set.first %}
+                                        {% if asignacion %}
+                                            <span class="badge bg-success" data-bs-toggle="tooltip" 
+                                                  title="Agente: {{ asignacion.agente_actual.nombre_usuario }}">
+                                                <i class="fas fa-check-circle me-1"></i> Asignado
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">No asignado</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'editar_servicio' servicio.id %}" class="btn btn-primary" 
+                                           data-bs-toggle="tooltip" title="Editar servicio">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-danger" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#confirmModal" 
+                                                data-servicio-id="{{ servicio.id }}"
+                                                data-servicio-nombre="{{ servicio.nombre }}"
+                                                data-bs-toggle="tooltip" title="Eliminar servicio">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                <div class="modal-body">
-                    ¿Estás seguro de que deseas eliminar este servicio?
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-cogs fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">No hay servicios registrados</h5>
+                    <p class="text-muted mb-3">Los servicios definen las áreas de atención para los tickets.</p>
+                    <a href="{% url 'tikects_servicios_crear' %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i> Crear primer servicio
+                    </a>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <form id="deleteForm" method="post" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">Eliminar</button>
-                    </form>
-                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage">¿Está seguro de que desea eliminar este servicio?</p>
+                <p class="text-muted small">Esta acción no se puede deshacer y podría afectar a los tickets y asignaciones asociadas.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i> Cancelar
+                </button>
+                <form id="deleteForm" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-2"></i> Eliminar
+                    </button>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        // Manejar el evento de mostrar el modal
+<script>
+    // Inicializar tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+
+    // Manejar el modal de confirmación
+    document.addEventListener('DOMContentLoaded', function() {
         var confirmModal = document.getElementById('confirmModal');
-        confirmModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget; // Botón que activó el modal
-            var servicioId = button.getAttribute('data-servicio-id'); // Extraer información del atributo data-servicio-id
-
-            // Actualizar la acción del formulario con el ID del servicio
+        confirmModal.addEventListener('show.bs.modal', function(event) {
+            var button = event.relatedTarget;
+            var servicioId = button.getAttribute('data-servicio-id');
+            var servicioNombre = button.getAttribute('data-servicio-nombre');
+            
+            var modalMessage = document.getElementById('modalMessage');
+            modalMessage.innerHTML = `¿Está seguro de que desea eliminar el servicio <strong>${servicioNombre}</strong>?`;
+            
             var deleteForm = document.getElementById('deleteForm');
             deleteForm.action = '{% url "eliminar_servicio" 0 %}'.replace('0', servicioId);
         });
-    </script>
+    });
+</script>
 {% endblock %}

@@ -1,72 +1,119 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar Agente - TickPro{% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
-        <h1 class="text-center text-primary mb-4">
-            <i class="fas fa-user-edit me-2"></i> Editar Agente
-        </h1>
-
-        {% if messages %}
-            <div class="alert-container">
-                {% for message in messages %}
-                    <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-
-        <!-- Formulario -->
-        <form method="post" class="shadow p-4 rounded bg-light">
-            {% csrf_token %}
-            
-            <!-- Campo Nombre -->
-            <div class="mb-3">
-                <label for="nombre" class="form-label">Nombre:</label>
-                <input type="text" class="form-control" id="nombre" name="nombre" value="{{ agente.nombre }}" required>
-            </div>
-
-            <!-- Campo Apellido -->
-            <div class="mb-3">
-                <label for="apellido" class="form-label">Apellido:</label>
-                <input type="text" class="form-control" id="apellido" name="apellido" value="{{ agente.apellido }}" required>
-            </div>
-
-            <!-- Campo Nombre de Usuario -->
-            <div class="mb-3">
-                <label for="nombre_usuario" class="form-label">Nombre de Usuario:</label>
-                <input type="text" class="form-control" id="nombre_usuario" name="nombre_usuario" value="{{ agente.nombre_usuario }}" required>
-            </div>
-
-            <!-- Campo Email -->
-            <div class="mb-3">
-                <label for="email" class="form-label">Correo Electrónico:</label>
-                <input type="email" class="form-control" id="email" name="email" value="{{ agente.email }}" required>
-            </div>
-
-            <!-- Campo Teléfono -->
-            <div class="mb-3">
-                <label for="telefono" class="form-label">Teléfono:</label>
-                <input type="text" class="form-control" id="telefono" name="telefono" value="{{ agente.telefono }}" required>
-            </div>
-
-            <!-- Campo Contraseña (opcional) -->
-            <div class="mb-3">
-                <label for="password" class="form-label">Nueva Contraseña (opcional):</label>
-                <input type="password" class="form-control" id="password" name="password" placeholder="Ingresa una nueva contraseña">
-            </div>
-
-            <!-- Botones -->
-            <div class="text-center">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-2"></i> Guardar Cambios
-                </button>
-                <a href="{% url 'usuarios_agentes' %}" class="btn btn-secondary ms-2">
-                    <i class="fas fa-arrow-left me-2"></i> Cancelar
-                </a>
-            </div>
-        </form>
+<!-- Encabezado de página -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-user-edit me-3"></i> EDITAR AGENTE
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'configuracion' %}">Configuración</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'usuarios_agentes' %}">Agentes</a></li>
+                    <li class="breadcrumb-item active">Editar Agente</li>
+                </ol>
+            </nav>
+        </div>
     </div>
+</div>
+
+<div class="container">
+    <!-- Mensajes -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-user-tie me-2"></i> Datos del Agente</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="row">
+                    <!-- Nombre -->
+                    <div class="col-md-6 mb-3">
+                        <label for="nombre" class="form-label">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" value="{{ agente.nombre }}" required>
+                        <div class="invalid-feedback">El nombre es obligatorio.</div>
+                    </div>
+
+                    <!-- Apellido -->
+                    <div class="col-md-6 mb-3">
+                        <label for="apellido" class="form-label">Apellido <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="apellido" name="apellido" value="{{ agente.apellido }}" required>
+                        <div class="invalid-feedback">El apellido es obligatorio.</div>
+                    </div>
+
+                    <!-- Nombre de Usuario -->
+                    <div class="col-md-6 mb-3">
+                        <label for="nombre_usuario" class="form-label">Nombre de Usuario <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="nombre_usuario" name="nombre_usuario" value="{{ agente.nombre_usuario }}" required>
+                        <div class="invalid-feedback">El nombre de usuario es obligatorio.</div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">Correo Electrónico <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ agente.email }}" required>
+                        <div class="invalid-feedback">Ingrese un correo electrónico válido.</div>
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div class="col-md-6 mb-3">
+                        <label for="telefono" class="form-label">Teléfono <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="telefono" name="telefono" value="{{ agente.telefono }}" required>
+                        <div class="invalid-feedback">El teléfono es obligatorio.</div>
+                    </div>
+
+                    <!-- Contraseña (opcional) -->
+                    <div class="col-md-6 mb-3">
+                        <label for="password" class="form-label">Nueva Contraseña</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Dejar en blanco para mantener actual">
+                        <small class="text-muted">Mínimo 8 caracteres. Solo si desea cambiar la contraseña.</small>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="text-end mt-4">
+                    <a href="{% url 'usuarios_agentes' %}" class="btn btn-secondary me-2">
+                        <i class="fas fa-arrow-left me-2"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Validación de formulario Bootstrap
+    (function() {
+        'use strict';
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
 {% endblock %}

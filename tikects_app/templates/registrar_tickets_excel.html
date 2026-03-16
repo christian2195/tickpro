@@ -1,19 +1,156 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Registrar Tickets desde Excel - TickPro{% endblock %}
 
 {% block content %}
-    <h1>Registrar Tickets desde Excel</h1>
-        <form method="POST">
-            {% csrf_token %}
-            <button type="submit">Registrar Tickets</button>
-        </form>
+<!-- Encabezado de página -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-file-excel me-3"></i> REGISTRO MASIVO DE TICKETS
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'pagina_principal' %}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'configuracion' %}">Configuración</a></li>
+                    <li class="breadcrumb-item active">Registro Masivo</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
 
-        <!-- Mostrar mensajes -->
-        {% if messages %}
-            <ul>
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <!-- Mensajes -->
+            {% if messages %}
                 {% for message in messages %}
-                    <li>{{ message }}</li>
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                 {% endfor %}
-            </ul>
-        {% endif %}
+            {% endif %}
 
+            <!-- Tarjeta principal -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-upload me-2"></i> Carga de Tickets desde Excel</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Instrucciones -->
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i> Instrucciones:</h6>
+                        <p class="mb-2">El archivo Excel debe estar ubicado en la raíz del proyecto con el nombre <strong>LISTA DE TICKETS CERRADOS.xlsx</strong></p>
+                        <p class="mb-0">El archivo debe contener las siguientes columnas:</p>
+                        <ul class="mb-0 mt-2">
+                            <li><strong>IDdelcliente</strong> - Email del cliente</li>
+                            <li><strong>Cola</strong> - Nombre de la cola</li>
+                            <li><strong>Servicio</strong> - Nombre del servicio</li>
+                            <li><strong>Creado</strong> - Fecha de creación</li>
+                            <li><strong>Fechadecierre</strong> - Fecha de cierre</li>
+                            <li><strong>Título</strong> - Título del ticket</li>
+                            <li><strong>Estado</strong> - "cerrado" o "abierto"</li>
+                        </ul>
+                    </div>
+
+                    <!-- Formulario -->
+                    <form method="POST" class="mt-4">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Archivo Excel:</label>
+                            <div class="border rounded p-3 bg-light">
+                                <p class="mb-2">
+                                    <i class="fas fa-file-excel text-success fa-2x me-2"></i>
+                                    <strong>LISTA DE TICKETS CERRADOS.xlsx</strong>
+                                </p>
+                                <p class="text-muted small mb-0">
+                                    <i class="fas fa-folder-open me-1"></i>
+                                    Ubicación: {{ ruta_completa|default:"Raíz del proyecto" }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Advertencias -->
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Importante:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Los clientes deben existir en el sistema (buscados por email)</li>
+                                <li>Las colas y servicios deben estar previamente creados</li>
+                                <li>Los tickets duplicados no serán registrados</li>
+                            </ul>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'ver_tikects' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i> Volver
+                            </a>
+                            <button type="submit" class="btn btn-success" id="submitBtn">
+                                <span id="buttonText">
+                                    <i class="fas fa-upload me-2"></i> Procesar Archivo
+                                </span>
+                                <span id="loadingSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Ejemplo de formato -->
+            <div class="card mt-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-table me-2"></i> Ejemplo de formato</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>IDdelcliente</th>
+                                    <th>Cola</th>
+                                    <th>Servicio</th>
+                                    <th>Creado</th>
+                                    <th>Fechadecierre</th>
+                                    <th>Título</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>cliente@email.com</td>
+                                    <td>Soporte</td>
+                                    <td>Técnico</td>
+                                    <td>2024-01-15 10:30:00</td>
+                                    <td>2024-01-16 14:20:00</td>
+                                    <td>Problema con impresora</td>
+                                    <td>cerrado</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Loading button
+    document.querySelector('form').addEventListener('submit', function(event) {
+        const submitBtn = document.getElementById('submitBtn');
+        const buttonText = document.getElementById('buttonText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        submitBtn.disabled = true;
+        buttonText.classList.add('d-none');
+        loadingSpinner.classList.remove('d-none');
+    });
+</script>
 {% endblock %}

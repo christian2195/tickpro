@@ -1,14 +1,193 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inicio Clientes - TickPro{% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
-        <!-- Sección de bienvenida -->
-        <div class="text-center p-5 rounded" style="background-color: #f8f9fa;">
-            <h1 class="display-4 text-primary mb-3 animated-title">Bienvenido a TickPro</h1>
-            <p class="lead text-dark">
-                La mejor solución para la gestión de tickets y soporte técnico.
-            </p>
-            <a href="{% url 'ver_mis_tikects' %}" class="btn btn-primary btn-lg mt-3">Explorar Tikects</a>
+<!-- Encabezado de página -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-home me-3"></i> PORTAL DEL CLIENTE
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item active">Inicio</li>
+                </ol>
+            </nav>
         </div>
     </div>
+</div>
+
+<div class="container">
+    <!-- Bienvenida -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="text-primary mb-3">¡Bienvenido, {{ request.user.first_name|default:request.user.username }}!</h2>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i> {{ now|date:"l, d F Y" }}
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <i class="fas fa-user-circle fa-5x text-primary opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjetas de resumen -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card text-white bg-primary h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Mis Tickets</h6>
+                            <h2 class="mb-0">{{ total_mis_tickets|default:"0" }}</h2>
+                        </div>
+                        <i class="fas fa-ticket-alt fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-white bg-success h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Tickets Abiertos</h6>
+                            <h2 class="mb-0">{{ mis_tickets_abiertos|default:"0" }}</h2>
+                        </div>
+                        <i class="fas fa-folder-open fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-white bg-warning h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Tickets Cerrados</h6>
+                            <h2 class="mb-0">{{ mis_tickets_cerrados|default:"0" }}</h2>
+                        </div>
+                        <i class="fas fa-check-circle fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-plus-circle fa-4x text-success mb-3"></i>
+                    <h4>Nuevo Ticket</h4>
+                    <p class="text-muted">Crea un nuevo ticket para solicitar soporte</p>
+                    <a href="{% url 'crear_tikects' %}" class="btn btn-success">
+                        <i class="fas fa-plus-circle me-2"></i> Crear Ticket
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-list fa-4x text-primary mb-3"></i>
+                    <h4>Mis Tickets</h4>
+                    <p class="text-muted">Consulta el estado de tus tickets</p>
+                    <a href="{% url 'ver_mis_tikects' %}" class="btn btn-primary">
+                        <i class="fas fa-list me-2"></i> Ver Tickets
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Últimos tickets -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-history me-2"></i> Mis Últimos Tickets</h5>
+        </div>
+        <div class="card-body">
+            {% if ultimos_tickets %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Título</th>
+                                <th>Servicio</th>
+                                <th>Estado</th>
+                                <th>Fecha</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ticket in ultimos_tickets %}
+                            <tr>
+                                <td>#{{ ticket.id }}</td>
+                                <td>{{ ticket.titulo|truncatechars:40 }}</td>
+                                <td>{{ ticket.servicio_perteneciente.nombre }}</td>
+                                <td>
+                                    {% if ticket.cerrado %}
+                                        <span class="badge bg-danger">Cerrado</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Abierto</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ ticket.creado|date:"d/m/Y" }}</td>
+                                <td>
+                                    <a href="{% url 'detalle_tikect' ticket.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No tienes tickets creados aún.</p>
+                    <a href="{% url 'crear_tikects' %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i> Crear mi primer ticket
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Información de contacto -->
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-headset me-2"></i> ¿Necesitas ayuda?</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center mb-3">
+                    <i class="fas fa-phone-alt fa-2x text-info mb-2"></i>
+                    <h6>Teléfono</h6>
+                    <p class="text-muted">(0212) 123-4567</p>
+                </div>
+                <div class="col-md-4 text-center mb-3">
+                    <i class="fas fa-envelope fa-2x text-info mb-2"></i>
+                    <h6>Email</h6>
+                    <p class="text-muted">soporte@tickpro.com</p>
+                </div>
+                <div class="col-md-4 text-center mb-3">
+                    <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                    <h6>Horario</h6>
+                    <p class="text-muted">Lun-Vie 8:00 AM - 5:00 PM</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

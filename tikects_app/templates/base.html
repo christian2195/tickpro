@@ -1,170 +1,151 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de Gestión de Tickets - TickPro">
+    <meta name="author" content="TickPro">
+    
     {% load static %}
     <link rel="stylesheet" href="{% static 'tikects_app/styles.css' %}">
-
-    <!-- Cdn de bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
-    <!-- Cdn de fontawesome -->
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <title>TickPro</title>
+    
+    <title>TickPro - {% block title %}Sistema de Gestión de Tickets{% endblock %}</title>
     <link rel="shortcut icon" href="{% static 'tikects_app/favicon.ico' %}" type="image/x-icon">
 </head>
 <body>
-    <!-- Barra de navegación -->
+    <!-- Barra de navegación corporativa -->
     <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="#"><i class="fas fa-check-circle"></i> TickPro</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-ticket-alt"></i> TICKPRO
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-
                     {% if user.is_authenticated %}
+                        <!-- Notificaciones -->
                         {% block notifications %}
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle notification-bell" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-bell"></i>
-                                    <span class="badge">!</span>
-                                </a>
-                                
-                                <ul class="dropdown-menu animated-dropdown" aria-labelledby="navbarDropdown" style="width: 400px;">
-                                    {% for notificacion in notificaciones %}
-                                        {% if notificacion.agente.usuario == request.user and notificacion.leida == False %}
-                                            <li class="dropdown-item">
-                                                <div class="notification-content">
-                                                    <a href="{% url 'detalle_tikect' notificacion.tikect.id %}">{{ notificacion.descripcion }}</a>
-                                                </div>
-                                            </li>
-                                        {% endif %}
-                                    {% empty %}
-                                        <li class="dropdown-item text-muted">No hay notificaciones</li>
-                                    {% endfor %}
-                                </ul>
-                            </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle notification-bell" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-bell"></i>
+                                <span class="badge">!</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                {% for notificacion in notificaciones %}
+                                    {% if notificacion.agente.usuario == request.user and notificacion.leida == False %}
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'detalle_tikect' notificacion.tikect.id %}">
+                                                <small class="text-muted d-block">{{ notificacion.fecha_notificacion|date:"d/m/Y H:i" }}</small>
+                                                <span>{{ notificacion.descripcion|truncatechars:40 }}</span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                {% empty %}
+                                    <li class="dropdown-item text-muted">No hay notificaciones</li>
+                                {% endfor %}
+                            </ul>
+                        </li>
                         {% endblock %}
-                        
+
+                        <!-- Menú según rol -->
                         {% if user.is_superuser %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'pagina_principal' %}">Inicio</a>
+                                <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'pagina_principal' %}">INICIO</a>
                             </li>
-
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTickets" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Tickets
-                                </a>
-                                <ul class="dropdown-menu animated-dropdown" aria-labelledby="navbarDropdownTickets">
-                                    <li><a class="dropdown-item" href="{% url 'crear_tikects' %}">Crear Ticket</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'ver_tikects' %}">Lista de Tickets</a></li>
+                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">TICKETS</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'crear_tikects' %}">CREAR TICKET</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'ver_tikects' %}">LISTA DE TICKETS</a></li>
                                 </ul>
                             </li>
-                            
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'configuracion' %}">Configuración</a>
+                                <a class="nav-link" href="{% url 'configuracion' %}">CONFIGURACIÓN</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Usuario: {{ request.user.username }}</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'cerrar_sesion' %}">Cerrar sesión</a>
-                            </li>
-
                         {% elif user.agente %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'pagina_principal' %}">Inicio</a>
+                                <a class="nav-link" href="{% url 'pagina_principal' %}">INICIO</a>
                             </li>
-
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTickets" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Tickets
-                                </a>
-                                <ul class="dropdown-menu animated-dropdown" aria-labelledby="navbarDropdownTickets">
-                                    <li><a class="dropdown-item" href="{% url 'crear_tikects' %}">Crear Ticket</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'ver_tikects_asignados_agentes' %}">Lista de Tickets</a></li>
+                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">TICKETS</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'crear_tikects' %}">CREAR TICKET</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'ver_tikects_asignados_agentes' %}">MIS TICKETS</a></li>
                                 </ul>
                             </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Usuario: {{ request.user.username }}</a>
-                            </li>
-                            
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'cerrar_sesion' %}">Cerrar sesión</a>
-                            </li>
-                        
                         {% else %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'pagina_principal_clientes' %}">Inicio</a>
+                                <a class="nav-link" href="{% url 'pagina_principal_clientes' %}">INICIO</a>
                             </li>
-
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTickets" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Tickets
-                                </a>
-                                <ul class="dropdown-menu animated-dropdown" aria-labelledby="navbarDropdownTickets">
-                                    <li><a class="dropdown-item" href="{% url 'crear_cliente_tikects' %}">Crear Ticket</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'ver_mis_tikects' %}">Lista de Tickets</a></li>
+                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">TICKETS</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'crear_tikects' %}">CREAR TICKET</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'ver_mis_tikects' %}">MIS TICKETS</a></li>
                                 </ul>
                             </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Usuario: {{ request.user.username }}</a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'cerrar_sesion' %}">Cerrar sesión</a>
-                            </li>
                         {% endif %}
+
+                        <!-- Usuario -->
+                        <li class="nav-item">
+                            <span class="nav-link">
+                                <i class="fas fa-user-circle"></i> {{ request.user.username|upper }}
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'cerrar_sesion' %}">
+                                <i class="fas fa-sign-out-alt"></i> SALIR
+                            </a>
+                        </li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Modal de notificaciones -->
-    <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="notificationModalLabel">Notificación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p id="modalNotificationContent"></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Contenedor para mensajes -->
+    <!-- Mensajes -->
     {% if messages %}
     <div class="container mt-3">
         {% for message in messages %}
         <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
             {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
         {% endfor %}
     </div>
     {% endif %}
 
-    {% block content %}
-    {% endblock %}
+    <!-- Contenido principal -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
 
-    <!-- Variable global para la API de notificaciones -->
-    <script>
-        var notificationApiUrl = "{% url 'check_notifications' %}";
-    </script>
+    <!-- Footer -->
+    <footer class="bg-light text-center py-3 mt-5 border-top">
+        <div class="container">
+            <p class="mb-0 text-muted small">
+                <i class="fas fa-ticket-alt me-2"></i> TickPro - Sistema de Gestión de Tickets v1.0
+                <br>
+                <span class="text-muted">© {% now "Y" %} Todos los derechos reservados</span>
+            </p>
+        </div>
+    </footer>
 
-    <script src="{% static 'tikects_app/app.js' %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </body>
 </html>

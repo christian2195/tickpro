@@ -1,89 +1,162 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Colas - TickPro{% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
-        <h1 class="text-center mb-4 text-primary">
-            <i class="fas fa-stream me-2"></i> Colas
-        </h1>
+<!-- Encabezado de página -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-stream me-3"></i> COLAS
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'configuracion' %}">Configuración</a></li>
+                    <li class="breadcrumb-item active">Colas</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
 
-        <!-- Crear Cola -->
-        <h2 class="text-secondary mt-4">
-            <a href="{% url 'tikects_colas_crear' %}" class="text-decoration-none text-dark">
-                <i class="fas fa-plus-circle me-2"></i> Crear Cola
-            </a>
-        </h2>
+<div class="container">
+    <!-- Mensajes -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
 
-        <!-- Colas List -->
-        <h2 class="text-secondary mt-4">
-            <i class="fas fa-list me-2"></i> Colas
-        </h2>
-        
-        <!-- Example of a table for queue visualization -->
-        <table class="table table-hover mt-3">
-            <thead class="table-primary">
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Nombre</th>
-                    <th scope="col">Descripción</th>
-                    <th scope="col">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for colas in colas %}
-                <tr>
-                    <th scope="row">{{ forloop.counter }}</th>
-                    <td>{{ colas.nombre }}</td>
-                    <td>{{ colas.descripcion }}</td>
-                    <td>
-                        <a href="{% url 'editar_cola' colas.id %}" class="btn btn-sm btn-primary me-2">
-                            <i class="fas fa-edit"></i> Editar
-                        </a>
-                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#confirmModal" data-cola-id="{{ colas.id }}">
-                            <i class="fas fa-trash-alt"></i> Eliminar
-                        </button>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" class="text-center">No hay colas disponibles.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- Botón de acción -->
+    <div class="mb-4">
+        <a href="{% url 'tikects_colas_crear' %}" class="btn btn-success">
+            <i class="fas fa-plus-circle me-2"></i> Nueva Cola
+        </a>
     </div>
 
-    <!-- Modal de confirmación -->
-    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirmModalLabel">Confirmar eliminación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- Tabla de colas -->
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i> Listado de Colas</h5>
+            <span class="badge bg-light text-dark">Total: {{ colas|length }}</span>
+        </div>
+        <div class="card-body">
+            {% if colas %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Tickets</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cola in colas %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <strong>{{ cola.nombre }}</strong>
+                                </td>
+                                <td>{{ cola.descripcion|truncatechars:80 }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ cola.tickets_set.count }}</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'editar_cola' cola.id %}" class="btn btn-primary" 
+                                           data-bs-toggle="tooltip" title="Editar cola">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-danger" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#confirmModal" 
+                                                data-cola-id="{{ cola.id }}"
+                                                data-cola-nombre="{{ cola.nombre }}"
+                                                data-bs-toggle="tooltip" title="Eliminar cola">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                <div class="modal-body">
-                    ¿Estás seguro de que deseas eliminar esta cola?
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-stream fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">No hay colas registradas</h5>
+                    <p class="text-muted mb-3">Las colas permiten organizar los tickets por categorías.</p>
+                    <a href="{% url 'tikects_colas_crear' %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i> Crear primera cola
+                    </a>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <form id="deleteForm" method="post" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">Eliminar</button>
-                    </form>
-                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage">¿Está seguro de que desea eliminar esta cola?</p>
+                <p class="text-muted small">Esta acción no se puede deshacer y podría afectar a los tickets asociados.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i> Cancelar
+                </button>
+                <form id="deleteForm" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-2"></i> Eliminar
+                    </button>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        // Manejar el evento de mostrar el modal
+<script>
+    // Inicializar tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+
+    // Manejar el modal de confirmación
+    document.addEventListener('DOMContentLoaded', function() {
         var confirmModal = document.getElementById('confirmModal');
-        confirmModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget; // Botón que activó el modal
-            var colaId = button.getAttribute('data-cola-id'); // Extraer información del atributo data-cola-id
-
-            // Actualizar la acción del formulario con el ID de la cola
+        confirmModal.addEventListener('show.bs.modal', function(event) {
+            var button = event.relatedTarget;
+            var colaId = button.getAttribute('data-cola-id');
+            var colaNombre = button.getAttribute('data-cola-nombre');
+            
+            var modalMessage = document.getElementById('modalMessage');
+            modalMessage.innerHTML = `¿Está seguro de que desea eliminar la cola <strong>${colaNombre}</strong>?`;
+            
             var deleteForm = document.getElementById('deleteForm');
             deleteForm.action = '{% url "eliminar_cola" 0 %}'.replace('0', colaId);
         });
-    </script>
+    });
+</script>
 {% endblock %}
