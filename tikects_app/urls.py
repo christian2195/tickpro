@@ -64,4 +64,6 @@ urlpatterns = [
     path('agentes/ver/', views.ver_agentes, name='ver_agentes'),
     path('registrar-tickets/', views.registrar_tickets_excel, name='registrar_tickets'),
     path('tikects/crear_cliente_tikects/', views.crear_tikects_clientes, name='crear_cliente_tikects'),
+    path('mesa-triage/', views.mesa_triage, name='mesa_triage'),
+    path('procesar-triage/<int:ticket_id>/', views.procesar_triage, name='procesar_triage'),
 ]

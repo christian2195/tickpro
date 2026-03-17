@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'pagina_principal' %}">Inicio</a></li>
+                    <li class="breadcrumb-item active">Mesa de Triaje</li>
+                </ol>
+            </nav>
+            
+            <h1 class="h2 mb-4">Mesa de Triaje</h1>
+        </div>
+    </div>
+    
+    <!-- Estadísticas rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Críticos</h5>
+                    <p class="card-text display-4">{{ stats.por_prioridad.critica }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Urgentes</h5>
+                    <p class="card-text display-4">{{ stats.por_prioridad.urgente }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Alta Prioridad</h5>
+                    <p class="card-text display-4">{{ stats.por_prioridad.alta }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-secondary">
+                <div class="card-body">
+                    <h5 class="card-title">Total Pendientes</h5>
+                    <p class="card-text display-4">{{ stats.total_pendientes }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-filter"></i> Filtros
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="prioridad" class="form-label">Prioridad</label>
+                    <select name="prioridad" id="prioridad" class="form-select">
+                        <option value="">Todas</option>
+                        {% for key, value in prioridades %}
+                        <option value="{{ key }}" {% if prioridad_actual == key %}selected{% endif %}>{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="tipo" class="form-label">Tipo</label>
+                    <select name="tipo" id="tipo" class="form-select">
+                        <option value="">Todos</option>
+                        {% for key, value in tipos %}
+                        <option value="{{ key }}" {% if tipo_actual == key %}selected{% endif %}>{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="busqueda" class="form-label">Buscar</label>
+                    <input type="text" class="form-control" id="busqueda" name="busqueda" value="{{ busqueda }}" placeholder="Título, descripción, usuario...">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Lista de tickets -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-ticket-alt"></i> Tickets Pendientes de Triaje
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Usuario</th>
+                            <th>Prioridad</th>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th>Creado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in tickets %}
+                        <tr>
+                            <td>{{ ticket.id }}</td>
+                            <td>{{ ticket.titulo|truncatechars:50 }}</td>
+                            <td>{{ ticket.usuario.username }}</td>
+                            <td>
+                                {% if ticket.prioridad == 'critica' %}
+                                <span class="badge bg-danger">Crítica</span>
+                                {% elif ticket.prioridad == 'urgente' %}
+                                <span class="badge bg-warning">Urgente</span>
+                                {% elif ticket.prioridad == 'alta' %}
+                                <span class="badge bg-info">Alta</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ ticket.get_prioridad_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ ticket.get_tipo_display }}</td>
+                            <td>
+                                {% if ticket.estado_triage == 'nuevo' %}
+                                <span class="badge bg-primary">Nuevo</span>
+                                {% elif ticket.estado_triage == 'triaje' %}
+                                <span class="badge bg-warning">En Triaje</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ ticket.get_estado_triage_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ ticket.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <a href="{% url 'procesar_triage' ticket.id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-tasks"></i> Procesar
+                                </a>
+                                <a href="{% url 'detalle_tikect' ticket.id %}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> Ver
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">No hay tickets pendientes de triaje</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Paginación -->
+            {% if tickets.has_other_pages %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if tickets.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ tickets.previous_page_number }}{% if prioridad_actual %}&prioridad={{ prioridad_actual }}{% endif %}{% if tipo_actual %}&tipo={{ tipo_actual }}{% endif %}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}">Anterior</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for i in tickets.paginator.page_range %}
+                        {% if tickets.number == i %}
+                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                        {% else %}
+                        <li class="page-item"><a class="page-link" href="?page={{ i }}{% if prioridad_actual %}&prioridad={{ prioridad_actual }}{% endif %}{% if tipo_actual %}&tipo={{ tipo_actual }}{% endif %}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}">{{ i }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if tickets.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ tickets.next_page_number }}{% if prioridad_actual %}&prioridad={{ prioridad_actual }}{% endif %}{% if tipo_actual %}&tipo={{ tipo_actual }}{% endif %}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}">Siguiente</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

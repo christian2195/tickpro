@@ -1,0 +1,53 @@
+It is impossible to add the field 'fecha_creacion' with 'auto_now_add=True' to agentes without providing a default. This is because the database needs something to populate existing rows.
+ 1) Provide a one-off default now which will be set on all existing rows
+ 2) Quit and manually define a default value in models.py.
+Select an option: Please select a valid option: Please select a valid option: Traceback (most recent call last):
+  File "/var/www/html/tickets/manage.py", line 22, in <module>
+    main()
+    ~~~~^^
+  File "/var/www/html/tickets/manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/var/www/html/tickets/venv/lib/python3.13/site-packages/django/core/management/__init__.py", line 443, in execute_from_command_line
+    utility.execute()
+    ~~~~~~~~~~~~~~~^^
+  File "/var/www/html/tickets/venv/lib/python3.13/site-packages/django/core/management/__init__.py", line 437, in execute
+    self.fetch_command(subcommand).run_from_argv(self.argv)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/var/www/html/tickets/venv/lib/python3.13/site-packages/django/core/management/base.py", line 420, in run_from_argv
+    self.execute(*args, **cmd_options)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/html/tickets/venv/lib/python3.13/site-packages/django/core/management/base.py", line 464, in execute
+    output = self.handle(*args, **options)
+  File "/var/www/html/tickets/venv/lib/python3.13/site-packages/django/core/management/base.py", line 111, in wrapper
+    res = handle_func(*args, **kwargs)
+  File "/var/www/html/tickets/venv/lib/python3.13/site-packages/django/core/management/commands/makemigrations.py", line 238, in handle
+    changes = autodetector.changes(
+        graph=loader.graph,
+    ...<2 lines>...
+        migration_name=self.migration_name,
+    )
+  File "/var/www/html/tickets/venv/lib/python3.13/site-packages/django/db/migrations/autodetector.py", line 68, in changes
+    changes = self._detect_changes(convert_apps, graph)
+  File "/var/www/html/tickets/venv/lib/python3.13/site-packages/django/db/migrations/autodetector.py", line 218, in _detect_changes
+    self.generate_added_fields()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/var/www/html/tickets/venv/lib/python3.13/site-packages/django/db/migrations/autodetector.py", line 1152, in generate_added_fields
+    self._generate_added_field(app_label, model_name, field_name)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/html/tickets/venv/lib/python3.13/site-packages/django/db/migrations/autodetector.py", line 1190, in _generate_added_field
+    field.default = self.questioner.ask_auto_now_add_addition(
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        field_name, model_name
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/var/www/html/tickets/venv/lib/python3.13/site-packages/django/db/migrations/questioner.py", line 258, in ask_auto_now_add_addition
+    choice = self._choice_input(
+        f"It is impossible to add the field '{field_name}' with "
+    ...<7 lines>...
+        ],
+    )
+  File "/var/www/html/tickets/venv/lib/python3.13/site-packages/django/db/migrations/questioner.py", line 116, in _choice_input
+    result = input()
+EOFError: EOF when reading a line

@@ -1,11 +1,41 @@
 from django.db import models
 from django.contrib.auth.models import User
 import datetime
-default_date = datetime.datetime.now()
 
-# Create your models here.
+# ============================================
+# OPCIONES PARA LOS CAMPOS
+# ============================================
+TIPO_TICKET = [
+    ('bug', 'Bug/Error'),
+    ('feature', 'Nueva Funcionalidad'),
+    ('support', 'Soporte General'),
+    ('consulta', 'Consulta'),
+    ('incidente', 'Incidente'),
+]
 
-#Tablas para los tickets
+PRIORIDAD = [
+    ('baja', 'Baja'),
+    ('media', 'Media'),
+    ('alta', 'Alta'),
+    ('urgente', 'Urgente'),
+    ('critica', 'Crítica'),
+]
+
+ESTADO_TICKET = [
+    ('nuevo', 'Nuevo (Sin revisar)'),
+    ('triaje', 'En Triaje'),
+    ('asignado', 'Asignado'),
+    ('en_proceso', 'En Proceso'),
+    ('pendiente', 'Pendiente de Información'),
+    ('resuelto', 'Resuelto'),
+    ('cerrado', 'Cerrado'),
+    ('rechazado', 'Rechazado'),
+]
+
+# ============================================
+# TABLAS DE CONFIGURACIÓN
+# ============================================
+
 class Tickets_Colas(models.Model):
     nombre = models.CharField(max_length=200)
     descripcion = models.TextField()
@@ -22,103 +52,117 @@ class Tickets_Servicios(models.Model):
 
 class Tickets_Respuestas_Automaticas(models.Model):
     nombre = models.CharField(max_length=200)
+    asunto = models.CharField(max_length=200)
+    cuerpo = models.TextField()
 
     def __str__(self):
-        return self.nombre 
+        return self.nombre
 
-class Tickets(models.Model):
-    titulo = models.CharField(max_length=200)
-    descripcion = models.TextField()
-    creado = models.DateTimeField(auto_now_add=True)
-    cerrado = models.BooleanField(default=False)
-    cerrado_fecha = models.DateTimeField(null=True, blank=True)
-    cola_perteneciente = models.ForeignKey(Tickets_Colas, on_delete=models.CASCADE)
-    servicio_perteneciente = models.ForeignKey(Tickets_Servicios, on_delete=models.CASCADE)
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
-    Direccion = models.CharField(max_length=200, default=None)
-    descripcion_solucion = models.TextField(null=True, blank=True)
-    cerrado_por_agente = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cerrado_por_agente', null=True, blank=True)
+# ============================================
+# USUARIOS Y AGENTES
+# ============================================
 
-    def __str__(self):
-        return self.titulo
-
-#Tablas para los agentes y clientes
-class Agentes(models.Model):
-    nombre = models.CharField(max_length=200)
-    apellido = models.CharField(max_length=200)
-    nombre_usuario = models.CharField(max_length=200)
-    email = models.EmailField()
-    telefono = models.CharField(max_length=200, default=None)
-    ultima_conexion = models.DateTimeField(default=datetime.datetime.now)
-    usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='agente', default=None)
-
-    def __str__(self):
-        return self.nombre_usuario
-    
-class Cliente(models.Model):
-    nombre = models.CharField(max_length=200)
-    apellido = models.CharField(max_length=200)
-    nombre_usuario = models.CharField(max_length=200)
-    email = models.EmailField(null=True, blank=True)  # Ahora no es obligatorio
-    telefono = models.CharField(max_length=200, null=True, blank=True, default=None)  # Ahora no es obligatorio
-    Direccion = models.CharField(max_length=200, default=None)
-    usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cliente', default=None)
-
-    def __str__(self):
-        return self.nombre_usuario
-#Tablas para los grupos de agentes y clientes
 class Grupos_Agentes(models.Model):
     nombre = models.CharField(max_length=200)
     descripcion = models.TextField()
 
     def __str__(self):
         return self.nombre
-    
-class Grupos_Clientes(models.Model):
-    nombre = models.CharField(max_length=200)
-    descripcion = models.TextField()
+
+class Agentes(models.Model):
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE)
+    nombre_usuario = models.CharField(max_length=200)
+    correo = models.EmailField()
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.nombre
-    
+        return self.nombre_usuario
+
 class Agentes_Por_Grupos(models.Model):
     agente = models.ForeignKey(Agentes, on_delete=models.CASCADE)
     grupo = models.ForeignKey(Grupos_Agentes, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.agente.nombre_usuario} - {self.grupo.nombre}"
-    
 
-#Tablas para los permisos
-class Permisos(models.Model):
+# ============================================
+# CLIENTES
+# ============================================
+
+class Direcciones(models.Model):
     nombre = models.CharField(max_length=200)
     descripcion = models.TextField()
-
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.nombre
-    
-# Tabla para la asignación de tikects a agentes genéricos
-class AsignacionTikects(models.Model):
-    servicio = models.ForeignKey(Tickets_Servicios, on_delete=models.CASCADE)
-    agente_actual = models.ForeignKey(Agentes, on_delete=models.CASCADE, related_name='agente_actual')
-    tiempo_reasignacion = models.IntegerField(null=True, blank=True)  # Tiempo en minutos
-    agente_reasignacion = models.ForeignKey(Agentes, on_delete=models.CASCADE, related_name='agente_reasignacion', null=True, blank=True)
+
+class Grupos_Clientes(models.Model):
+    nombre = models.CharField(max_length=200)
+    descripcion = models.TextField()
 
     def __str__(self):
-        return f"Servicio: {self.servicio.nombre}, Agente Actual: {self.agente_actual.nombre_usuario}"
+        return self.nombre
+
+class Cliente(models.Model):
+    nombre = models.CharField(max_length=200)
+    correo = models.EmailField()
+    telefono = models.CharField(max_length=20, blank=True, null=True)
+    direccion = models.ForeignKey(Direcciones, on_delete=models.SET_NULL, null=True)
+    grupo = models.ForeignKey(Grupos_Clientes, on_delete=models.SET_NULL, null=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.nombre
+
+# ============================================
+# TABLA PRINCIPAL: TICKETS
+# ============================================
+
+class Tickets(models.Model):
+    titulo = models.CharField(max_length=200)
+    descripcion = models.TextField()
     
-#Tabla para los tikects reasignados
+    # --- CAMPO CORREGIDO ---
+    tipo = models.CharField(max_length=20, choices=TIPO_TICKET, default='support')
+    # -----------------------
+    
+    prioridad = models.CharField(max_length=20, choices=PRIORIDAD, default='media')
+    estado = models.CharField(max_length=20, choices=ESTADO_TICKET, default='nuevo')
+    estado_triage = models.CharField(max_length=20, choices=ESTADO_TICKET, default='nuevo')
+    
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tickets_creados')
+    agente_asignado = models.ForeignKey(Agentes, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    cola = models.ForeignKey(Tickets_Colas, on_delete=models.SET_NULL, null=True, blank=True)
+    servicio = models.ForeignKey(Tickets_Servicios, on_delete=models.SET_NULL, null=True, blank=True)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, null=True, blank=True)
+
+    # Campos para cierre
+    cerrado_por_agente = models.ForeignKey(Agentes, on_delete=models.SET_NULL, null=True, blank=True, related_name='tickets_cerrados')
+    fecha_cierre = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"#{self.id} - {self.titulo}"
+
+# ============================================
+# SEGUIMIENTO Y NOTIFICACIONES
+# ============================================
+
+class AsignacionTikects(models.Model):
+    tikect = models.ForeignKey(Tickets, on_delete=models.CASCADE)
+    agente = models.ForeignKey(Agentes, on_delete=models.CASCADE)
+    fecha_asignacion = models.DateTimeField(auto_now_add=True)
+
 class ReasignacionTikects(models.Model):
     tikect = models.ForeignKey(Tickets, on_delete=models.CASCADE)
     agente_anterior = models.ForeignKey(Agentes, on_delete=models.CASCADE, related_name='reasignaciones_anterior')
     agente_nuevo = models.ForeignKey(Agentes, on_delete=models.CASCADE, related_name='reasignaciones_nuevo')
     fecha_reasignacion = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Tikect: {self.tikect.titulo}, Reasignado de: {self.agente_anterior.nombre_usuario} a {self.agente_nuevo.nombre_usuario}"
-    
-#Tabla para notificaciones
 class Notificaciones(models.Model):
     tikect = models.ForeignKey(Tickets, on_delete=models.CASCADE)
     descripcion = models.TextField()
@@ -129,12 +173,3 @@ class Notificaciones(models.Model):
 
     def __str__(self):
         return self.descripcion
-    
-#Tabla para Direciones
-class Direcciones(models.Model):  # Antes: Gerencias
-    nombre = models.CharField(max_length=200)
-    descripcion = models.TextField()
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.nombre

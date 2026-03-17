@@ -1,80 +1,151 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agentes Genéricos - TickPro{% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
-        <!-- Título principal -->
-        <h1 class="text-center mb-4 text-primary">
-            <i class="fas fa-users-cog me-2"></i> Agentes Genéricos
-        </h1>
-
-        <!-- Botón para asignar agente genérico -->
-        <div class="mb-4 text-center">
-            <a href="{% url 'agente_generico' %}" class="btn btn-success">
-                <i class="fas fa-user-plus me-2"></i> Asignar Agente Genérico
-            </a>
-        </div>
-
-        <!-- Tabla de Agentes Genéricos -->
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-success">
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Servicio</th>
-                        <th scope="col">Agente Actual</th>
-                        <th scope="col">Accion</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for asignacion in asignaciones %}
-                    <tr>
-                        <th scope="row">{{ forloop.counter }}</th>
-                        <td>{{ asignacion.servicio.nombre }}</td>
-                        <td>{{ asignacion.agente_actual.nombre_usuario }} ({{ asignacion.agente_actual.nombre }} {{ asignacion.agente_actual.apellido }})</td>
-                        <td>
-                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#confirmModal" data-asignacion-id="{{ asignacion.id }}">
-                                <i class="fas fa-trash-alt"></i> Eliminar
-                            </button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- Encabezado de página -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-users-cog me-3"></i> AGENTES GENÉRICOS
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'configuracion' %}">Configuración</a></li>
+                    <li class="breadcrumb-item active">Agentes Genéricos</li>
+                </ol>
+            </nav>
         </div>
     </div>
+</div>
 
-    <!-- Modal de confirmación -->
-    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirmModalLabel">Confirmar eliminación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    ¿Estás seguro de que deseas eliminar esta asignación?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <form id="deleteForm" method="post" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">Eliminar</button>
-                    </form>
-                </div>
+<div class="container">
+    <!-- Botón de acción -->
+    <div class="mb-4">
+        <a href="{% url 'agente_generico' %}" class="btn btn-success">
+            <i class="fas fa-plus-circle me-2"></i> Nueva Asignación Genérica
+        </a>
+    </div>
+
+    <!-- Tabla de asignaciones -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i> Listado de Asignaciones Genéricas</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Servicio</th>
+                            <th>Agente Actual</th>
+                            <th>Agente Reasignación</th>
+                            <th>Tiempo Reasignación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asignacion in asignaciones %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <strong>{{ asignacion.servicio.nombre }}</strong>
+                            </td>
+                            <td>
+                                <i class="fas fa-user-tie text-primary me-1"></i>
+                                {{ asignacion.agente_actual.nombre_usuario }}
+                                <small class="d-block text-muted">{{ asignacion.agente_actual.nombre }} {{ asignacion.agente_actual.apellido }}</small>
+                            </td>
+                            <td>
+                                {% if asignacion.agente_reasignacion %}
+                                    <i class="fas fa-user-clock text-warning me-1"></i>
+                                    {{ asignacion.agente_reasignacion.nombre_usuario }}
+                                {% else %}
+                                    <span class="text-muted">No configurado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if asignacion.tiempo_reasignacion %}
+                                    <span class="badge bg-info">{{ asignacion.tiempo_reasignacion }} minutos</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-danger" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#confirmModal" 
+                                        data-asignacion-id="{{ asignacion.id }}"
+                                        data-servicio="{{ asignacion.servicio.nombre }}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <i class="fas fa-info-circle text-muted fa-2x mb-2"></i>
+                                <p class="text-muted mb-0">No hay asignaciones genéricas configuradas.</p>
+                                <a href="{% url 'agente_generico' %}" class="btn btn-sm btn-primary mt-3">
+                                    <i class="fas fa-plus-circle me-2"></i> Crear primera asignación
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        // Manejar el evento de mostrar el modal
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage">¿Está seguro de que desea eliminar esta asignación genérica?</p>
+                <p class="text-muted small">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i> Cancelar
+                </button>
+                <form id="deleteForm" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-2"></i> Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Manejar el modal de confirmación
+    document.addEventListener('DOMContentLoaded', function() {
         var confirmModal = document.getElementById('confirmModal');
-        confirmModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget; // Botón que activó el modal
-            var asignacionId = button.getAttribute('data-asignacion-id'); // Extraer información del atributo data-asignacion-id
-
-            // Actualizar la acción del formulario con el ID de la asignación
+        confirmModal.addEventListener('show.bs.modal', function(event) {
+            var button = event.relatedTarget;
+            var asignacionId = button.getAttribute('data-asignacion-id');
+            var servicio = button.getAttribute('data-servicio');
+            
+            var modalMessage = document.getElementById('modalMessage');
+            modalMessage.innerHTML = `¿Está seguro de que desea eliminar la asignación genérica para el servicio <strong>${servicio}</strong>?`;
+            
             var deleteForm = document.getElementById('deleteForm');
             deleteForm.action = '{% url "eliminar_asignacion" 0 %}'.replace('0', asignacionId);
         });
-    </script>
+    });
+</script>
 {% endblock %}

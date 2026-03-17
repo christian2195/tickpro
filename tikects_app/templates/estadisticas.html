@@ -178,8 +178,8 @@
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>
-                                        {{ agente.cerrado_por_agente__agente__nombre }} 
-                                        {{ agente.cerrado_por_agente__agente__apellido }}
+                                        {{ agente.cerrado_por_agente__first_name }} 
+                                        {{ agente.cerrado_por_agente__last_name }}
                                     </td>
                                     <td>{{ agente.cerrado_por_agente__username }}</td>
                                     <td>
@@ -232,8 +232,8 @@
                         <select name="servicio" id="servicio_excel" class="form-select">
                             <option value="Todo">Todos los servicios</option>
                             {% for servicio in servicios %}
-                                <option value="{{ servicio.servicio_perteneciente__nombre }}">
-                                    {{ servicio.servicio_perteneciente__nombre }}
+                                <option value="{{ servicio.servicio__nombre }}">
+                                    {{ servicio.servicio__nombre }}
                                 </option>
                             {% endfor %}
                         </select>
@@ -267,8 +267,8 @@
                         <select name="servicio" id="servicio_pdf" class="form-select">
                             <option value="Todo">Todos los servicios</option>
                             {% for servicio in servicios %}
-                                <option value="{{ servicio.servicio_perteneciente__nombre }}">
-                                    {{ servicio.servicio_perteneciente__nombre }}
+                                <option value="{{ servicio.servicio__nombre }}">
+                                    {{ servicio.servicio__nombre }}
                                 </option>
                             {% endfor %}
                         </select>
@@ -318,7 +318,7 @@
 
     // Gráfico de barras: Tickets por servicio
     const tikectsServiceData = {
-        labels: [{% for servicio in servicios %}'{{ servicio.servicio_perteneciente__nombre }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+        labels: [{% for servicio in servicios %}'{{ servicio.servicio__nombre }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
         datasets: [{
             label: 'Cantidad de Tickets',
             data: [{% for servicio in servicios %}{{ servicio.count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
@@ -351,7 +351,7 @@
 
     // Gráfico de línea: Tickets cerrados por día
     const tikectsPorDiaCerradosData = {
-        labels: [{% for item in tikects_por_dia_cerrados %}'{{ item.cerrado_fecha__date|date:"d/m/Y" }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+        labels: [{% for item in tikects_por_dia_cerrados %}'{{ item.fecha_cierre__date|date:"d/m/Y" }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
         datasets: [{
             label: 'Tickets Cerrados',
             data: [{% for item in tikects_por_dia_cerrados %}{{ item.count }}{% if not forloop.last %}, {% endif %}{% endfor %}],

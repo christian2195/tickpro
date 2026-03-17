@@ -98,16 +98,16 @@
                             <tr>
                                 <td><strong>#{{ tikect.id }}</strong></td>
                                 <td>
-                                    <small>{{ tikect.creado|date:"d/m/Y" }}</small>
+                                    <small>{{ tikect.fecha_creacion|date:"d/m/Y" }}</small>
                                     <br>
-                                    <small class="text-muted">{{ tikect.creado|date:"h:i A" }}</small>
+                                    <small class="text-muted">{{ tikect.fecha_creacion|date:"h:i A" }}</small>
                                 </td>
                                 <td>{{ tikect.titulo|truncatechars:30 }}</td>
                                 <td>{{ tikect.descripcion|truncatechars:50 }}</td>
                                 <td>{{ tikect.direccion|truncatechars:20 }}</td>
-                                <td>{{ tikect.servicio_perteneciente.nombre }}</td>
+                                <td>{{ tikect.servicio.nombre }}</td>
                                 <td>
-                                    {% if tikect.cerrado %}
+                                    {% if tikect.estado == 'cerrado' %}
                                         <span class="badge bg-danger">Cerrado</span>
                                     {% else %}
                                         <span class="badge bg-success">Abierto</span>

@@ -16,10 +16,10 @@ fi
 python -c "import django" 2>/dev/null
 if [ $? -ne 0 ]; then
     echo "❌ Django no está instalado. Instalando..."
-    pip install django==5.0.6 psycopg2-binary
+    pip install -r requirements.txt
 fi
 
-# 1. Recrear la base de datos desde cero (con tus nombres reales)
+# --- 1. RECREAR BASE DE DATOS ---
 echo "🗑️  Eliminando base de datos existente..."
 sudo -u postgres psql -c "DROP DATABASE IF EXISTS tikectsbd;"
 sudo -u postgres psql -c "DROP USER IF EXISTS django_user;"
@@ -28,34 +28,41 @@ echo "👤 Creando usuario y base de datos..."
 sudo -u postgres psql -c "CREATE USER django_user WITH PASSWORD 'erick2978';"
 sudo -u postgres psql -c "CREATE DATABASE tikectsbd OWNER django_user;"
 
-# 2. Dar permisos completos
+# 2. Dar permisos (El SUPERUSER es temporal para la creación, luego lo quitamos)
 echo "🔑 Configurando permisos..."
 sudo -u postgres psql -d tikectsbd -c "GRANT ALL ON SCHEMA public TO django_user;"
 sudo -u postgres psql -d tikectsbd -c "ALTER SCHEMA public OWNER TO django_user;"
-sudo -u postgres psql -c "ALTER USER django_user WITH SUPERUSER;"  # Temporal para pruebas
+# --- CONCEDEMOS SUPERUSER TEMPORALMENTE PARA LAS MIGRACIONES ---
+sudo -u postgres psql -c "ALTER USER django_user WITH SUPERUSER;"
 
-# 3. Verificar conexión
-echo "🔍 Verificando conexión a la base de datos..."
-python manage.py dbshell << EOF
-\dt
-\q
-EOF
+# 3. Verificar conexión (Opcional)
+# echo "🔍 Verificando conexión a la base de datos..."
+# python manage.py dbshell << EOF
+# \dt
+# \q
+# EOF
 
-# 4. Eliminar migraciones antiguas (opcional, si quieres empezar fresco)
+# --- 4. LIMPIAR MIGRACIONES ANTIGUAS ---
 echo "🧹 Limpiando migraciones antiguas..."
 find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
 find . -path "*/migrations/*.pyc" -delete
 
-# 5. Crear nuevas migraciones
-echo "📦 Creando migraciones..."
-python manage.py makemigrations tikects_app
+# --- 5. CREAR Y APLICAR MIGRACIONES (FORMA CORRECTA) ---
+echo "📦 Creando migraciones iniciales..."
+# Esto crea las migraciones para todas las apps, incluyendo las de Django (auth, admin, etc.)
+python manage.py makemigrations
 
-# 6. Aplicar todas las migraciones
 echo "🚀 Aplicando migraciones..."
+# Esto aplica TODAS las migraciones en el orden correcto
 python manage.py migrate
 
-# 7. Crear superusuario
-echo "👤 Creando superusuario..."
+# --- 6. REVOCAR SUPERUSER (BUENA PRÁCTICA) ---
+echo "🔒 Revocando permisos de superusuario de django_user..."
+sudo -u postgres psql -c "ALTER USER django_user WITH NOSUPERUSER;"
+
+# --- 7. CREAR SUPERUSUARIO ---
+echo "👤 Creando superusuario 'admin'..."
+# Usamos shell para evitar el prompt interactivo de createsuperuser
 python manage.py shell -c "
 from django.contrib.auth import get_user_model;
 User = get_user_model();
@@ -75,7 +82,7 @@ echo "===================================="
 echo "✅ CONFIGURACIÓN COMPLETA"
 echo "===================================="
 echo "🌐 Para iniciar el servidor:"
-echo "   cd /var/www/html/tickets"
+echo "   cd $(pwd)"
 echo "   source venv/bin/activate"
 echo "   python manage.py runserver 0.0.0.0:8000"
 echo ""
