@@ -1061,10 +1061,10 @@ def exportar_tikects_pdf(request):
 def agente_generico(request):
     if request.method == 'GET':
         servicios = Tickets_Servicios.objects.exclude(
-            id__in=AsignacionTikects.objects.values_list('servicio', flat=True)
+            id__in=AsignacionTikects.objects.values_list('tikect__servicio', flat=True)
         )
         agentes = Agentes.objects.exclude(
-            id__in=AsignacionTikects.objects.values_list('agente_actual', flat=True)
+            id__in=AsignacionTikects.objects.values_list('agente', flat=True)
         )
         return render(request, 'agente_generico.html', {
             'servicios': servicios,
@@ -1072,7 +1072,7 @@ def agente_generico(request):
         })
     else:
         servicio_id = request.POST.get('servicio')
-        agente_actual_id = request.POST.get('agente_actual')
+        agente_actual_id = request.POST.get('agente')
         tiempo_reasignacion = request.POST.get('tiempo_reasignacion')
         agente_reasignacion_id = request.POST.get('agente_reasignacion')
 
