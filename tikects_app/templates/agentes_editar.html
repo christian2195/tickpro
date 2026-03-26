@@ -43,47 +43,59 @@
                 {% csrf_token %}
                 
                 <div class="row">
-                    <!-- Nombre -->
+                    <!-- Nombre (first_name del usuario) -->
                     <div class="col-md-6 mb-3">
                         <label for="nombre" class="form-label">Nombre <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="nombre" name="nombre" value="{{ agente.nombre }}" required>
+                        <input type="text" class="form-control" id="nombre" name="nombre" 
+                               value="{{ nombre|default:agente.usuario.first_name }}" required>
                         <div class="invalid-feedback">El nombre es obligatorio.</div>
                     </div>
 
-                    <!-- Apellido -->
+                    <!-- Apellido (last_name del usuario) -->
                     <div class="col-md-6 mb-3">
                         <label for="apellido" class="form-label">Apellido <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="apellido" name="apellido" value="{{ agente.apellido }}" required>
+                        <input type="text" class="form-control" id="apellido" name="apellido" 
+                               value="{{ apellido|default:agente.usuario.last_name }}" required>
                         <div class="invalid-feedback">El apellido es obligatorio.</div>
                     </div>
 
-                    <!-- Nombre de Usuario -->
+                    <!-- Nombre de Usuario (username del usuario) -->
                     <div class="col-md-6 mb-3">
                         <label for="nombre_usuario" class="form-label">Nombre de Usuario <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="nombre_usuario" name="nombre_usuario" value="{{ agente.nombre_usuario }}" required>
+                        <input type="text" class="form-control" id="nombre_usuario" name="nombre_usuario" 
+                               value="{{ nombre_usuario|default:agente.usuario.username }}" required>
                         <div class="invalid-feedback">El nombre de usuario es obligatorio.</div>
                     </div>
 
-                    <!-- Email -->
+                    <!-- Email (email del usuario) -->
                     <div class="col-md-6 mb-3">
                         <label for="email" class="form-label">Correo Electrónico <span class="text-danger">*</span></label>
-                        <input type="email" class="form-control" id="email" name="email" value="{{ agente.email }}" required>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               value="{{ email|default:agente.usuario.email }}" required>
                         <div class="invalid-feedback">Ingrese un correo electrónico válido.</div>
                     </div>
 
-                    <!-- Teléfono -->
+                    <!-- Teléfono (no existe en el modelo, solo se muestra como referencia) -->
                     <div class="col-md-6 mb-3">
-                        <label for="telefono" class="form-label">Teléfono <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="telefono" name="telefono" value="{{ agente.telefono }}" required>
-                        <div class="invalid-feedback">El teléfono es obligatorio.</div>
+                        <label for="telefono" class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" id="telefono" name="telefono" 
+                               value="{{ agente.telefono|default:'' }}" placeholder="No disponible">
+                        <small class="text-muted">El teléfono no está implementado en el sistema actualmente.</small>
                     </div>
 
                     <!-- Contraseña (opcional) -->
                     <div class="col-md-6 mb-3">
                         <label for="password" class="form-label">Nueva Contraseña</label>
-                        <input type="password" class="form-control" id="password" name="password" placeholder="Dejar en blanco para mantener actual">
+                        <input type="password" class="form-control" id="password" name="password" 
+                               placeholder="Dejar en blanco para mantener actual">
                         <small class="text-muted">Mínimo 8 caracteres. Solo si desea cambiar la contraseña.</small>
                     </div>
+                </div>
+
+                <!-- Información adicional -->
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Nota:</strong> Los campos "Nombre de Usuario" y "Correo Electrónico" deben ser únicos en el sistema.
                 </div>
 
                 <!-- Botones de acción -->

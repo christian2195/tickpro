@@ -66,4 +66,5 @@ urlpatterns = [
     path('tikects/crear_cliente_tikects/', views.crear_tikects_clientes, name='crear_cliente_tikects'),
     path('mesa-triage/', views.mesa_triage, name='mesa_triage'),
     path('procesar-triage/<int:ticket_id>/', views.procesar_triage, name='procesar_triage'),
+    path('agentes/eliminar/<int:agente_id>/', views.eliminar_agente, name='eliminar_agente'),
 ]

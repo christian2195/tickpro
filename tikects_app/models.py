@@ -173,3 +173,19 @@ class Notificaciones(models.Model):
 
     def __str__(self):
         return self.descripcion
+
+# ============================================
+# AGENTES GENÉRICOS (Asignación de servicios)
+# ============================================
+
+class AgenteGenerico(models.Model):
+    """Asignación de agentes genéricos a servicios con tiempo de reasignación"""
+    servicio = models.ForeignKey('Tickets_Servicios', on_delete=models.CASCADE, related_name='agentes_genericos')
+    agente_actual = models.ForeignKey('Agentes', on_delete=models.CASCADE, related_name='servicios_asignados')
+    agente_reasignacion = models.ForeignKey('Agentes', on_delete=models.SET_NULL, null=True, blank=True, related_name='servicios_reasignacion')
+    tiempo_reasignacion = models.IntegerField(null=True, blank=True, help_text='Tiempo en minutos')
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.servicio.nombre} - {self.agente_actual.nombre_usuario}"
+

@@ -1,60 +1,108 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-    <div class="container mt-5">
-        <!-- Título principal -->
-        <h1 class="text-center mb-4 text-primary">
-            <i class="fas fa-user-tie me-2"></i> Agentes
-        </h1>
+<div class="container mt-5">
+    <!-- Título principal -->
+    <h1 class="text-center mb-4 text-primary">
+        <i class="fas fa-user-tie me-2"></i> Agentes
+    </h1>
 
-        <!-- Crear Agente -->
-        <h2 class="text-secondary mt-4">
-            <a href="{% url 'usuarios_agentes_crear' %}" class="text-decoration-none text-dark">
-                <i class="fas fa-plus-circle me-2"></i> Crear Agente
-            </a>
-        </h2>
-
-        <!-- Lista de Agentes -->
-        <h2 class="text-secondary mt-4">
-            <i class="fas fa-list me-2"></i> Lista de Agentes
-        </h2>
-
-        <!-- Tabla de agentes -->
-        <table class="table table-hover mt-3">
-            <thead class="table-primary">
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Nombre de Usuario</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Última vez conectado</th>
-                    <th scope="col">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for agentes in agentes %}
-                <tr>
-                    <th scope="row">{{ forloop.counter }}</th>
-                    <td>{{ agentes.nombre_usuario }}</td>
-                    <td>{{ agentes.email }}</td>
-                    <td>{{ agentes.ultima_conexion }}</td>
-                    <td>
-                        <a href="{% url 'editar_agente' agentes.id %}" class="btn btn-sm btn-primary me-2">
-                            <i class="fas fa-edit"></i> Editar
-                        </a>
-                        <form action="#" method="post" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger">
-                                <i class="fas fa-trash-alt"></i> Eliminar
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="text-center">No hay agentes disponibles.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- Botón Crear Agente -->
+    <div class="mb-4 text-center">
+        <a href="{% url 'usuarios_agentes_crear' %}" class="btn btn-success">
+            <i class="fas fa-plus-circle me-2"></i> Crear Agente
+        </a>
     </div>
+
+    <!-- Mensajes -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Tabla de agentes -->
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i> Lista de Agentes</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>#</th>
+                            <th>Nombre de Usuario</th>
+                            <th>Nombre Completo</th>
+                            <th>Email</th>
+                            <th>Fecha de Creación</th>
+                            <th>Acciones</th>
+                        </thead>
+                        <tbody>
+                            {% for agente in agentes %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td><strong>{{ agente.nombre_usuario }}</strong></td>
+                                <td>{{ agente.usuario.first_name }} {{ agente.usuario.last_name }}</td>
+                                <td>{{ agente.correo }}</td>
+                                <td>{{ agente.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'editar_agente' agente.id %}" class="btn btn-primary" 
+                                           data-bs-toggle="tooltip" title="Editar agente">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-danger" 
+                                                onclick="confirmarEliminacion({{ agente.id }}, '{{ agente.nombre_usuario }}')"
+                                                data-bs-toggle="tooltip" title="Eliminar agente">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="fas fa-info-circle text-muted fa-2x mb-2"></i>
+                                    <p class="text-muted mb-0">No hay agentes registrados.</p>
+                                    <a href="{% url 'usuarios_agentes_crear' %}" class="btn btn-sm btn-primary mt-3">
+                                        <i class="fas fa-plus-circle me-2"></i> Crear primer agente
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario oculto para eliminar -->
+    <form id="deleteForm" method="post" style="display: none;">
+        {% csrf_token %}
+    </form>
+
+    <script>
+        function confirmarEliminacion(agenteId, agenteNombre) {
+            if(confirm(`¿Estás seguro de que deseas eliminar al agente "${agenteNombre}"?\n\nEsta acción eliminará el perfil de agente pero el usuario podrá seguir existiendo en el sistema.`)) {
+                var form = document.getElementById('deleteForm');
+                form.action = '{% url "eliminar_agente" 0 %}'.replace('0', agenteId);
+                form.submit();
+            }
+        }
+
+        // Inicializar tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
 {% endblock %}

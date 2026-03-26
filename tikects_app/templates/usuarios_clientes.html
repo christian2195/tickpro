@@ -1,50 +1,63 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-    <div class="container mt-5">
-        <!-- Título principal -->
-        <h1 class="text-center mb-4 text-primary">
-            <i class="fas fa-users me-2"></i> Lista de Clientes
-        </h1>
+<div class="container mt-5">
+    <h1 class="text-center mb-4 text-primary">
+        <i class="fas fa-users me-2"></i> Lista de Clientes
+    </h1>
 
-        <!-- Botón para agregar nuevo cliente -->
-        <div class="mb-4 text-center">
-            <a href="{% url 'crear_cliente' %}" class="btn btn-success">
-                <i class="fas fa-plus-circle me-2"></i> Agregar Cliente
-            </a>
-        </div>
+    <div class="mb-4 text-center">
+        <a href="{% url 'crear_cliente' %}" class="btn btn-success">
+            <i class="fas fa-plus-circle me-2"></i> Agregar Cliente
+        </a>
+    </div>
 
-        <!-- Tabla de Clientes -->
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-success">
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Nombre</th>
-                        <th scope="col">Apellido</th>
-                        <th scope="col">Nombre de usuario</th>
-                        <th scope="col">Correo Electrónico</th>
-                        <th scope="col">Dirección</th>
-                        <th scope="col">Accion</th>
-                    </tr>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-success">
+                <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Usuario</th>
+                    <th>Correo</th>
+                    <th>Dirección</th>
+                    <th>Acciones</th>
+                </tr>
                 </thead>
                 <tbody>
                     {% for cliente in page_obj %}
                     <tr>
-                        <th scope="row">{{ forloop.counter }}</th>
+                        <td>{{ forloop.counter }}</td>
                         <td>{{ cliente.nombre }}</td>
                         <td>{{ cliente.apellido }}</td>
                         <td>{{ cliente.nombre_usuario }}</td>
-                        <td>{% if cliente.email is None %} Sin correo {% else %} {{ cliente.email }} {% endif %}</td>
+                        <td>{% if cliente.email %}{{ cliente.email }}{% else %}Sin correo{% endif %}</td>
                         <td>{{ cliente.direccion }}</td>
                         <td>
                             <a href="{% url 'editar_cliente' cliente.id %}" class="btn btn-sm btn-warning">
                                 <i class="fas fa-edit"></i> Editar
                             </a>
-                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#confirmModal" data-cliente-id="{{ cliente.id }}">
+                            <button type="button" class="btn btn-sm btn-danger" 
+                                    onclick="confirmarEliminacion({{ cliente.id }}, '{{ cliente.nombre }}')">
                                 <i class="fas fa-trash-alt"></i> Eliminar
                             </button>
                         </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">No hay clientes registrados.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -52,55 +65,42 @@
         </div>
 
         <!-- Paginación -->
-        <div class="pagination">
-            {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-secondary">Anterior</a>
-            {% endif %}
-            {% for page in page_obj.paginator.page_range %}
-                {% if page == page_obj.number %}
-                    <a href="?page={{ page }}" class="btn btn-primary">{{ page }}</a>
-                {% else %}
-                    <a href="?page={{ page }}" class="btn btn-secondary">{{ page }}</a>
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                    </li>
                 {% endif %}
-            {% endfor %}
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-secondary">Siguiente</a>
-            {% endif %}
-        </div>
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
     </div>
 
-    <!-- Modal de confirmación -->
-    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirmModalLabel">Confirmar eliminación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    ¿Estás seguro de que deseas eliminar este cliente?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <form id="deleteForm" method="post" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">Eliminar</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+    <form id="deleteForm" method="post" style="display: none;">
+        {% csrf_token %}
+    </form>
 
     <script>
-        // Manejar el evento de mostrar el modal
-        var confirmModal = document.getElementById('confirmModal');
-        confirmModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget; // Botón que activó el modal
-            var clienteId = button.getAttribute('data-cliente-id'); // Extraer información del atributo data-cliente-id
-
-            // Actualizar la acción del formulario con el ID del cliente
-            var deleteForm = document.getElementById('deleteForm');
-            deleteForm.action = '{% url "eliminar_cliente" 0 %}'.replace('0', clienteId);
-        });
+        function confirmarEliminacion(clienteId, clienteNombre) {
+            if(confirm(`¿Estás seguro de que deseas eliminar al cliente "${clienteNombre}"?`)) {
+                var form = document.getElementById('deleteForm');
+                form.action = '{% url "eliminar_cliente" 0 %}'.replace('0', clienteId);
+                form.submit();
+            }
+        }
     </script>
 {% endblock %}
